@@ -1,4 +1,4 @@
-resource "aws_db_subnet_group" "main" {
+resource "aws_db_subnet_group" "this" {
   name       = "${var.project_name}-${var.environment}-db-subnet-group"
   subnet_ids = var.subnet_ids
 
@@ -37,7 +37,7 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_db_parameter_group" "main" {
+resource "aws_db_parameter_group" "this" {
   name   = "${var.project_name}-${var.environment}-mysql-params"
   family = "mysql8.0"
 
@@ -63,7 +63,7 @@ resource "aws_db_parameter_group" "main" {
   }
 }
 
-resource "aws_db_instance" "main" {
+resource "aws_db_instance" "this" {
   identifier     = "${var.project_name}-${var.environment}-mysql"
   engine         = "mysql"
   engine_version = var.mysql_version
@@ -78,9 +78,9 @@ resource "aws_db_instance" "main" {
   username = var.master_username
   password = var.master_password
 
-  db_subnet_group_name   = aws_db_subnet_group.main.name
+  db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.rds.id]
-  parameter_group_name   = aws_db_parameter_group.main.name
+  parameter_group_name   = aws_db_parameter_group.this.name
 
   backup_retention_period = var.backup_retention_period
   backup_window           = var.backup_window

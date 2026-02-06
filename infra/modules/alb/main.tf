@@ -45,7 +45,7 @@ resource "aws_security_group" "alb" {
 }
 
 # Application Load Balancer
-resource "aws_lb" "main" {
+resource "aws_lb" "this" {
   name               = "${var.project}-${var.env}-alb"
   internal           = false  # ALB público (accesible desde Internet)
   load_balancer_type = "application"
@@ -104,7 +104,7 @@ resource "aws_lb_target_group" "ecs" {
 # Listener HTTP (puerto 80)
 # Escucha peticiones HTTP y las redirige al Target Group
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
 
