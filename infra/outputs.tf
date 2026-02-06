@@ -50,3 +50,17 @@ output "db_security_group_id" {
   description = "ID del security group de la base de datos"
   value       = module.rds.db_security_group_id
 }
+
+# ============================================
+# BASTION OUTPUTS
+# ============================================
+
+output "bastion_instance_id" {
+  description = "ID de la instancia bastion para Session Manager"
+  value       = module.bastion.bastion_instance_id
+}
+
+output "bastion_connection_command" {
+  description = "Comando para conectar via Session Manager"
+  value       = "aws ssm start-session --target ${module.bastion.bastion_instance_id}"
+}

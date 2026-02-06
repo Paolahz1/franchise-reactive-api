@@ -36,7 +36,7 @@ variable "availability_zones" {
 variable "mysql_version" {
   description = "Versión de MySQL"
   type        = string
-  default     = "8.0.35"
+  default     = "8.0.45"
 }
 
 variable "db_instance_class" {
@@ -97,4 +97,10 @@ variable "db_deletion_protection" {
   description = "Habilitar protección contra eliminación"
   type        = bool
   default     = true
+}
+
+variable "db_publicly_accessible" {
+  description = "Hacer la instancia RDS públicamente accesible"
+  type        = bool
+  default     = false
 }

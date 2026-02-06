@@ -33,7 +33,7 @@ module "rds" {
   project_name    = var.project
   environment     = var.env
   vpc_id          = module.networking.vpc_id
-  subnet_ids      = module.networking.private_subnet_ids
+  subnet_ids      = module.networking.private_subnet_ids  # Back to private subnets
   allowed_cidr_blocks = [var.vpc_cidr]
 
   mysql_version       = var.mysql_version
@@ -49,4 +49,18 @@ module "rds" {
   multi_az                = var.db_multi_az
   skip_final_snapshot     = var.db_skip_final_snapshot
   deletion_protection     = var.db_deletion_protection
+  publicly_accessible     = var.db_publicly_accessible
+}
+
+# ============================================
+# FASE 4: Bastion Host (Systems Manager)
+# ============================================
+
+module "bastion" {
+  source = "./modules/bastion"
+
+  project           = var.project
+  env               = var.env
+  vpc_id            = module.networking.vpc_id
+  private_subnet_id = module.networking.private_subnet_ids[0]
 }
