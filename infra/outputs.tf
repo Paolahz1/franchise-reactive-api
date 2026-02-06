@@ -64,3 +64,27 @@ output "bastion_connection_command" {
   description = "Comando para conectar via Session Manager"
   value       = "aws ssm start-session --target ${module.bastion.bastion_instance_id}"
 }
+
+# ============================================
+# ALB OUTPUTS
+# ============================================
+
+output "alb_dns_name" {
+  description = "URL pública del Application Load Balancer (para acceder a la API)"
+  value       = module.alb.alb_dns_name
+}
+
+output "alb_arn" {
+  description = "ARN del Application Load Balancer"
+  value       = module.alb.alb_arn
+}
+
+output "alb_target_group_arn" {
+  description = "ARN del Target Group (usado por ECS)"
+  value       = module.alb.target_group_arn
+}
+
+output "api_url" {
+  description = "URL completa de la API"
+  value       = "http://${module.alb.alb_dns_name}"
+}

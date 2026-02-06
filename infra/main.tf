@@ -64,3 +64,20 @@ module "bastion" {
   vpc_id            = module.networking.vpc_id
   private_subnet_id = module.networking.private_subnet_ids[0]
 }
+
+# ============================================
+# FASE 5: Application Load Balancer
+# ============================================
+
+module "alb" {
+  source = "./modules/alb"
+
+  project            = var.project
+  env                = var.env
+  vpc_id             = module.networking.vpc_id
+  public_subnet_ids  = module.networking.public_subnet_ids  # ALB en subnets públicas
+
+  container_port               = var.container_port
+  health_check_path            = var.health_check_path
+  enable_deletion_protection   = var.alb_deletion_protection
+}

@@ -1,3 +1,13 @@
 dependencies {
     implementation project(':model')
+    
+    // Testing dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+    testImplementation 'io.projectreactor:reactor-test:3.8.1'
+}
+
+test {
+    useJUnitPlatform()
 }
