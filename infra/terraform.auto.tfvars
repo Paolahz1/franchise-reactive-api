@@ -9,4 +9,4 @@ db_master_password = "ChangeThisPassword123!"  # TODO: Use AWS Secrets Manager i
 # Database configuration for development
 db_skip_final_snapshot = true  # Skip snapshot on destroy in dev
 db_deletion_protection = false  # Allow deletion in dev
-db_publicly_accessible = true   # Allow external connections in dev (CHANGE TO FALSE IN PROD!)
+db_publicly_accessible = false  # DB is PRIVATE - use bastion tunnel for local access

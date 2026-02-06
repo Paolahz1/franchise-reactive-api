@@ -5,10 +5,12 @@ import co.com.bancolombia.api.dto.FranchiseRequest;
 import co.com.bancolombia.api.dto.FranchiseResponse;
 import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
 import co.com.bancolombia.api.dto.TopProductResponse;
+import co.com.bancolombia.api.dto.UpdateNameRequest;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.createfranchise.CreateFranchiseUseCase;
 import co.com.bancolombia.usecase.getmaxstockproductsbyfranchise.GetMaxStockProductsByFranchiseUseCase;
+import co.com.bancolombia.usecase.updatefranchisename.UpdateFranchiseNameUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,6 +27,7 @@ public class FranchiseHandler {
 
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final GetMaxStockProductsByFranchiseUseCase getMaxStockProductsByFranchiseUseCase;
+    private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
 
     public Mono<ServerResponse> createFranchise(ServerRequest request) {
         return request.bodyToMono(FranchiseRequest.class)
@@ -63,5 +66,22 @@ public class FranchiseHandler {
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> updateFranchiseName(ServerRequest request) {
+        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
+                .flatMap(franchiseId ->
+                    request.bodyToMono(UpdateNameRequest.class)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                        .flatMap(updateRequest ->
+                            updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
+                        )
+                )
+                .flatMap(franchise -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(FranchiseResponse.builder()
+                                .id(franchise.getId())
+                                .name(franchise.getName())
+                                .build()));
     }
 }

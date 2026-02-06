@@ -2,6 +2,7 @@ package co.com.bancolombia.api.router;
 
 import co.com.bancolombia.api.dto.BranchRequest;
 import co.com.bancolombia.api.dto.BranchResponse;
+import co.com.bancolombia.api.dto.UpdateNameRequest;
 import co.com.bancolombia.api.handler.BranchHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +27,7 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 public class BranchRouter {
 
     private static final String BASE_PATH = "/api/franchises/{franchiseId}/branches";
+    private static final String UPDATE_NAME_PATH = "/api/branches/{branchId}/name";
 
     @Bean
     @RouterOperations({
@@ -70,10 +72,57 @@ public class BranchRouter {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/branches/{branchId}/name",
+                    method = RequestMethod.PATCH,
+                    operation = @Operation(
+                            operationId = "updateBranchName",
+                            summary = "Actualizar nombre de sucursal",
+                            description = "Actualiza el nombre de una sucursal existente",
+                            parameters = {
+                                    @Parameter(
+                                            name = "branchId", 
+                                            description = "ID de la sucursal", 
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "integer", format = "int64", example = "1")
+                                    )
+                            },
+                            requestBody = @RequestBody(
+                                    description = "Nuevo nombre de la sucursal",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = UpdateNameRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Nombre actualizado exitosamente",
+                                            content = @Content(schema = @Schema(implementation = BranchResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Nombre vacío o inválido"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "Sucursal no encontrada"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "409",
+                                            description = "Ya existe una sucursal con ese nombre en la franquicia"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error interno del servidor"
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> branchRoutes(BranchHandler handler) {
         return RouterFunctions
-                .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addBranchToFranchise);
+                .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addBranchToFranchise)
+                .andRoute(PATCH(UPDATE_NAME_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::updateBranchName);
     }
 }

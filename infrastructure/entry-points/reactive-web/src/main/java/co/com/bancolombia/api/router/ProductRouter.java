@@ -2,6 +2,7 @@ package co.com.bancolombia.api.router;
 
 import co.com.bancolombia.api.dto.ProductRequest;
 import co.com.bancolombia.api.dto.ProductResponse;
+import co.com.bancolombia.api.dto.UpdateNameRequest;
 import co.com.bancolombia.api.dto.UpdateStockRequest;
 import co.com.bancolombia.api.handler.ProductHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ public class ProductRouter {
     private static final String BASE_PATH = "/api/branches/{branchId}/products";
     private static final String PRODUCT_PATH = "/api/branches/{branchId}/products/{productId}";
     private static final String UPDATE_STOCK_PATH = "/api/products/{productId}/stock";
+    private static final String UPDATE_PRODUCT_NAME_PATH = "/api/products/{productId}/name";
 
     @Bean
     @RouterOperations({
@@ -158,12 +160,59 @@ public class ProductRouter {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/products/{productId}/name",
+                    method = RequestMethod.PATCH,
+                    operation = @Operation(
+                            operationId = "updateProductName",
+                            summary = "Actualizar nombre de producto",
+                            description = "Actualiza el nombre de un producto existente",
+                            parameters = {
+                                    @Parameter(
+                                            name = "productId",
+                                            description = "ID del producto a actualizar",
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "integer", format = "int64", example = "1")
+                                    )
+                            },
+                            requestBody = @RequestBody(
+                                    description = "Nuevo nombre del producto",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = UpdateNameRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Nombre actualizado exitosamente",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Nombre vacío o inválido"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "Producto no encontrado"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "409",
+                                            description = "Ya existe un producto con ese nombre en la sucursal"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error interno del servidor"
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
         return RouterFunctions
                 .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addProductToBranch)
                 .andRoute(DELETE(PRODUCT_PATH), handler::removeProductFromBranch)
-                .andRoute(PATCH(UPDATE_STOCK_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::updateProductStock);
+                .andRoute(PATCH(UPDATE_STOCK_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::updateProductStock)
+                .andRoute(PATCH(UPDATE_PRODUCT_NAME_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::updateProductName);
     }
 }

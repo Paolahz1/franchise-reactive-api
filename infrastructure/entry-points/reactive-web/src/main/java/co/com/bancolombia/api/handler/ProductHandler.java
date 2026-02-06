@@ -2,11 +2,13 @@ package co.com.bancolombia.api.handler;
 
 import co.com.bancolombia.api.dto.ProductRequest;
 import co.com.bancolombia.api.dto.ProductResponse;
+import co.com.bancolombia.api.dto.UpdateNameRequest;
 import co.com.bancolombia.api.dto.UpdateStockRequest;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.addproducttobranch.AddProductToBranchUseCase;
 import co.com.bancolombia.usecase.removeproductfrombranch.RemoveProductFromBranchUseCase;
+import co.com.bancolombia.usecase.updateproductname.UpdateProductNameUseCase;
 import co.com.bancolombia.usecase.updateproductstock.UpdateProductStockUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ public class ProductHandler {
     private final AddProductToBranchUseCase addProductToBranchUseCase;
     private final RemoveProductFromBranchUseCase removeProductFromBranchUseCase;
     private final UpdateProductStockUseCase updateProductStockUseCase;
+    private final UpdateProductNameUseCase updateProductNameUseCase;
 
     public Mono<ServerResponse> addProductToBranch(ServerRequest request) {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
@@ -63,6 +66,25 @@ public class ProductHandler {
                         .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                         .flatMap(stockRequest ->
                             updateProductStockUseCase.execute(productId, stockRequest.getStock())
+                        )
+                )
+                .flatMap(product -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .stock(product.getStock())
+                                .branchId(product.getBranchId())
+                                .build()));
+    }
+
+    public Mono<ServerResponse> updateProductName(ServerRequest request) {
+        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("productId")))
+                .flatMap(productId ->
+                    request.bodyToMono(UpdateNameRequest.class)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                        .flatMap(updateRequest ->
+                            updateProductNameUseCase.execute(productId, updateRequest.getName())
                         )
                 )
                 .flatMap(product -> ServerResponse.ok()

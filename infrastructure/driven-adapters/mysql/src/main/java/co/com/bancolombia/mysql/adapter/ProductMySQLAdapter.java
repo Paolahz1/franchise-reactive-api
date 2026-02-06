@@ -47,6 +47,12 @@ public class ProductMySQLAdapter implements ProductRepository {
     }
 
     @Override
+    public Mono<Void> updateName(Long productId, String newName) {
+        return r2dbcRepository.updateName(productId, newName)
+            .then();
+    }
+
+    @Override
     public Flux<Product> findMaxStockByFranchise(Long franchiseId) {
         return r2dbcRepository.findMaxStockByFranchise(franchiseId)
             .map(productMapper::toDomain);

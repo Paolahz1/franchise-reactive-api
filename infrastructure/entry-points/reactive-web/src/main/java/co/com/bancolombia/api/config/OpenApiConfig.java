@@ -14,8 +14,11 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${spring.application.name}")
-    private String applicationName;
+    private final String applicationName;
+
+    public OpenApiConfig(@Value("${spring.application.name}") String applicationName) {
+        this.applicationName = applicationName;
+    }
 
     @Bean
     public OpenAPI customOpenAPI() {

@@ -17,6 +17,10 @@ public interface ProductR2dbcRepository extends R2dbcRepository<ProductEntity, L
     @Query("UPDATE products SET stock = :stock, updated_at = NOW() WHERE id = :id")
     Mono<Integer> updateStock(@Param("id") Long id, @Param("stock") Integer stock);
 
+    @Modifying
+    @Query("UPDATE products SET name = :name, updated_at = NOW() WHERE id = :id")
+    Mono<Integer> updateName(@Param("id") Long id, @Param("name") String name);
+
     @Query("""
         SELECT p.* 
         FROM products p
