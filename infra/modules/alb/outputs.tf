@@ -5,17 +5,17 @@
 
 output "alb_arn" {
   description = "ARN del Application Load Balancer"
-  value       = aws_lb.main.arn
+  value       = aws_lb.this.arn
 }
 
 output "alb_dns_name" {
   description = "DNS público del ALB (URL para acceder a la API)"
-  value       = aws_lb.main.dns_name
+  value       = aws_lb.this.dns_name
 }
 
 output "alb_zone_id" {
   description = "Zone ID del ALB (para Route 53 si necesitas dominio personalizado)"
-  value       = aws_lb.main.zone_id
+  value       = aws_lb.this.zone_id
 }
 
 output "alb_security_group_id" {
