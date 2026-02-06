@@ -2,6 +2,7 @@ package co.com.bancolombia.api.router;
 
 import co.com.bancolombia.api.dto.ProductRequest;
 import co.com.bancolombia.api.dto.ProductResponse;
+import co.com.bancolombia.api.dto.UpdateStockRequest;
 import co.com.bancolombia.api.handler.ProductHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +28,7 @@ public class ProductRouter {
 
     private static final String BASE_PATH = "/api/branches/{branchId}/products";
     private static final String PRODUCT_PATH = "/api/branches/{branchId}/products/{productId}";
+    private static final String UPDATE_STOCK_PATH = "/api/products/{productId}/stock";
 
     @Bean
     @RouterOperations({
@@ -114,11 +116,54 @@ public class ProductRouter {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/products/{productId}/stock",
+                    method = RequestMethod.PATCH,
+                    operation = @Operation(
+                            operationId = "updateProductStock",
+                            summary = "Actualizar stock de producto",
+                            description = "Modifica la cantidad en stock de un producto específico",
+                            parameters = {
+                                    @Parameter(
+                                            name = "productId",
+                                            description = "ID del producto a actualizar",
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "integer", format = "int64", example = "1")
+                                    )
+                            },
+                            requestBody = @RequestBody(
+                                    description = "Nuevo stock del producto",
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = UpdateStockRequest.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Stock actualizado exitosamente",
+                                            content = @Content(schema = @Schema(implementation = ProductResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Stock inválido (debe ser mayor o igual a 0)"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "Producto no encontrado"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error interno del servidor"
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
         return RouterFunctions
                 .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addProductToBranch)
-                .andRoute(DELETE(PRODUCT_PATH), handler::removeProductFromBranch);
+                .andRoute(DELETE(PRODUCT_PATH), handler::removeProductFromBranch)
+                .andRoute(PATCH(UPDATE_STOCK_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::updateProductStock);
     }
 }

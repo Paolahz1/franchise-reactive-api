@@ -4,6 +4,7 @@ import co.com.bancolombia.mysql.entity.ProductEntity;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,8 +14,8 @@ public interface ProductR2dbcRepository extends R2dbcRepository<ProductEntity, L
     Mono<ProductEntity> findByNameAndBranchId(String name, Long branchId);
 
     @Modifying
-    @Query("UPDATE products SET stock = :stock WHERE id = :id")
-    Mono<Integer> updateStock(Long id, Integer stock);
+    @Query("UPDATE products SET stock = :stock, updated_at = NOW() WHERE id = :id")
+    Mono<Integer> updateStock(@Param("id") Long id, @Param("stock") Integer stock);
 
     @Query("""
         SELECT p.* 
