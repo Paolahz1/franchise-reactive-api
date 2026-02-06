@@ -1,19 +1,13 @@
-resource "aws_s3_bucket" "this" {
-  bucket = "my-unique-bucket-name-12345"
-}
+# ============================================
+# FASE 1: NETWORKING
+# ============================================
+# VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables
 
-resource "aws_s3_bucket_versioning" "this" {
-  bucket = aws_s3_bucket.this.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+module "networking" {
+  source = "./modules/networking"
 
-resource "aws_s3_bucket_public_access_block" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  project            = var.project
+  env                = var.env
+  vpc_cidr           = var.vpc_cidr
+  availability_zones = var.availability_zones
 }

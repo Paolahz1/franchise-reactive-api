@@ -1,8 +1,3 @@
-variable "aws_region" {
-  description = "Región de AWS"
-  type        = string
-}
-
 variable "project" {
   description = "Nombre del proyecto"
   type        = string
@@ -13,10 +8,6 @@ variable "env" {
   type        = string
 }
 
-# ============================================
-# NETWORKING VARIABLES
-# ============================================
-
 variable "vpc_cidr" {
   description = "CIDR block para la VPC"
   type        = string
@@ -24,7 +15,7 @@ variable "vpc_cidr" {
 }
 
 variable "availability_zones" {
-  description = "Zonas de disponibilidad para alta disponibilidad"
+  description = "AZs para alta disponibilidad"
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }
