@@ -104,3 +104,25 @@ variable "db_publicly_accessible" {
   type        = bool
   default     = false
 }
+
+# ============================================
+# ALB VARIABLES
+# ============================================
+
+variable "container_port" {
+  description = "Puerto donde corre la aplicación en el contenedor (Spring Boot)"
+  type        = number
+  default     = 8080
+}
+
+variable "health_check_path" {
+  description = "Path del health check endpoint"
+  type        = string
+  default     = "/actuator/health"
+}
+
+variable "alb_deletion_protection" {
+  description = "Protección contra eliminación accidental del ALB"
+  type        = bool
+  default     = false
+}
