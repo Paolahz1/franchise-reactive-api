@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "this" {
-  bucket = "my-unique-bucket-name-12345"
+  bucket = "my-tf-test-bucket"
 }
 
 resource "aws_s3_bucket_versioning" "this" {
