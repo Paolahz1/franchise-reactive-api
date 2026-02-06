@@ -20,14 +20,14 @@ public class ProductHandler {
     private final AddProductToBranchUseCase addProductToBranchUseCase;
 
     public Mono<ServerResponse> addProductToBranch(ServerRequest request) {
-        String branchIdParam = request.pathVariable("branchId");
-        
-        return request.bodyToMono(ProductRequest.class)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                .flatMap(productRequest -> {
-                    Long branchId = Long.valueOf(branchIdParam);
-                    return addProductToBranchUseCase.execute(branchId, productRequest.getName(), productRequest.getStock());
-                })
+        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
+                .flatMap(branchId -> 
+                    request.bodyToMono(ProductRequest.class)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                        .flatMap(productRequest -> 
+                            addProductToBranchUseCase.execute(branchId, productRequest.getName(), productRequest.getStock())
+                        )
+                )
                 .flatMap(product -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(ProductResponse.builder()

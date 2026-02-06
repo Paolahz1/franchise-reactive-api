@@ -21,14 +21,14 @@ public class BranchHandler {
     private final AddBranchToFranchiseUseCase addBranchToFranchiseUseCase;
 
     public Mono<ServerResponse> addBranchToFranchise(ServerRequest request) {
-        String franchiseIdParam = request.pathVariable("franchiseId");
-        
-        return request.bodyToMono(BranchRequest.class)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                .flatMap(branchRequest -> {
-                    Long franchiseId = Long.valueOf(franchiseIdParam);
-                    return addBranchToFranchiseUseCase.execute(franchiseId, branchRequest.getName());
-                })
+        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
+                .flatMap(franchiseId -> 
+                    request.bodyToMono(BranchRequest.class)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                        .flatMap(branchRequest -> 
+                            addBranchToFranchiseUseCase.execute(franchiseId, branchRequest.getName())
+                        )
+                )
                 .flatMap(branch -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(BranchResponse.builder()

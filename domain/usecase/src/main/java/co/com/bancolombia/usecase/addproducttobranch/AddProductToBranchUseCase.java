@@ -20,30 +20,26 @@ public class AddProductToBranchUseCase {
                 .filter(name -> !name.isEmpty())
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_EMPTY))))
                 .flatMap(trimmedName -> 
-                    validateStock(stock)
-                        .then(branchRepository.findById(branchId)
-                            .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NOT_FOUND))))
-                            .flatMap(branch -> 
-                                productRepository.findByNameAndBranchId(trimmedName, branchId)
-                                    .flatMap(existing -> Mono.defer(() -> 
-                                        Mono.<Product>error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE))))
-                                    .switchIfEmpty(Mono.defer(() -> {
-                                        Product newProduct = Product.builder()
-                                                .name(trimmedName)
-                                                .stock(stock)
-                                                .branchId(branchId)
-                                                .build();
-                                        return productRepository.save(newProduct);
-                                    }))
-                            )
+                    Mono.justOrEmpty(stock)
+                        .filter(s -> s >= 0)
+                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_STOCK_INVALID))))
+                        .flatMap(validStock -> 
+                            branchRepository.findById(branchId)
+                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NOT_FOUND))))
+                                .flatMap(branch -> 
+                                    productRepository.findByNameAndBranchId(trimmedName, branchId)
+                                        .flatMap(existing -> Mono.defer(() -> 
+                                            Mono.<Product>error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE))))
+                                        .switchIfEmpty(Mono.defer(() -> {
+                                            Product newProduct = Product.builder()
+                                                    .name(trimmedName)
+                                                    .stock(validStock)
+                                                    .branchId(branchId)
+                                                    .build();
+                                            return productRepository.save(newProduct);
+                                        }))
+                                )
                         )
                 );
-    }
-
-    private Mono<Void> validateStock(Integer stock) {
-        if (stock == null || stock < 0) {
-            return Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_STOCK_INVALID)));
-        }
-        return Mono.empty();
     }
 }
