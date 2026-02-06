@@ -5,6 +5,7 @@ import co.com.bancolombia.api.dto.ProductResponse;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.addproducttobranch.AddProductToBranchUseCase;
+import co.com.bancolombia.usecase.removeproductfrombranch.RemoveProductFromBranchUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 public class ProductHandler {
 
     private final AddProductToBranchUseCase addProductToBranchUseCase;
+    private final RemoveProductFromBranchUseCase removeProductFromBranchUseCase;
 
     public Mono<ServerResponse> addProductToBranch(ServerRequest request) {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
@@ -36,5 +38,18 @@ public class ProductHandler {
                                 .stock(product.getStock())
                                 .branchId(product.getBranchId())
                                 .build()));
+    }
+
+    public Mono<ServerResponse> removeProductFromBranch(ServerRequest request) {
+        return Mono.fromSupplier(() -> 
+                    new Long[] {
+                        Long.valueOf(request.pathVariable("branchId")),
+                        Long.valueOf(request.pathVariable("productId"))
+                    }
+                )
+                .flatMap(ids -> 
+                    removeProductFromBranchUseCase.execute(ids[0], ids[1])
+                        .then(ServerResponse.noContent().build())
+                );
     }
 }

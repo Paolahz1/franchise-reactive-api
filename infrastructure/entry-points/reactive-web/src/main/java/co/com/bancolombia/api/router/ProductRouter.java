@@ -26,6 +26,7 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 public class ProductRouter {
 
     private static final String BASE_PATH = "/api/branches/{branchId}/products";
+    private static final String PRODUCT_PATH = "/api/branches/{branchId}/products/{productId}";
 
     @Bean
     @RouterOperations({
@@ -74,10 +75,50 @@ public class ProductRouter {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/branches/{branchId}/products/{productId}",
+                    method = RequestMethod.DELETE,
+                    operation = @Operation(
+                            operationId = "removeProductFromBranch",
+                            summary = "Eliminar producto de sucursal",
+                            description = "Elimina un producto específico de una sucursal",
+                            parameters = {
+                                    @Parameter(
+                                            name = "branchId", 
+                                            description = "ID de la sucursal", 
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "integer", format = "int64", example = "1")
+                                    ),
+                                    @Parameter(
+                                            name = "productId", 
+                                            description = "ID del producto a eliminar", 
+                                            required = true,
+                                            in = ParameterIn.PATH,
+                                            schema = @Schema(type = "integer", format = "int64", example = "1")
+                                    )
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "204",
+                                            description = "Producto eliminado exitosamente"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "Sucursal o producto no encontrado"
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "500",
+                                            description = "Error al eliminar el producto - el producto no pertenece a esta sucursal"
+                                    )
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
         return RouterFunctions
-                .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addProductToBranch);
+                .route(POST(BASE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::addProductToBranch)
+                .andRoute(DELETE(PRODUCT_PATH), handler::removeProductFromBranch);
     }
 }
