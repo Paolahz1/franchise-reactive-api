@@ -1,7 +1,22 @@
 FROM eclipse-temurin:25-jdk-alpine
 VOLUME /tmp
-COPY *.jar ServiceFranchise.jar
-ENV JAVA_OPTS=" -Xshareclasses:name=cacheapp,cacheDir=/cache,nonfatal -XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Djava.security.egd=file:/dev/./urandom"
-# Replace with a non-root user to avoid running the container with excessive privileges
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY *.jar /app/ServiceFranchise.jar
+
+ENV JAVA_OPTS="-Xshareclasses:name=cacheapp,cacheDir=/cache,nonfatal -XX:+UseContainerSupport -XX:MaxRAMPercentage=70 -Djava.security.egd=file:/dev/./urandom"
+ENV SPRING_PROFILES_ACTIVE=aws
+
+# Change ownership of the app directory
+RUN chown -R appuser:appgroup /app
+
+WORKDIR /app
+
+# Switch to non-root user
 USER appuser
-ENTRYPOINT [ "/bin/sh", "-c", "/opt/java/openjdk/bin/java $JAVA_OPTS  -jar /ServiceFranchise.jar" ]
+
+EXPOSE 8080
+
+ENTRYPOINT ["/bin/sh", "-c", "/opt/java/openjdk/bin/java $JAVA_OPTS -jar /app/ServiceFranchise.jar"]

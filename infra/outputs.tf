@@ -21,3 +21,32 @@ output "private_subnet_ids" {
   description = "IDs de las subnets privadas (para ECS y RDS)"
   value       = module.networking.private_subnet_ids
 }
+
+# ============================================
+# RDS OUTPUTS
+# ============================================
+
+output "db_instance_endpoint" {
+  description = "Endpoint de conexión a la base de datos"
+  value       = module.rds.db_instance_endpoint
+}
+
+output "db_instance_address" {
+  description = "Hostname de la instancia RDS"
+  value       = module.rds.db_instance_address
+}
+
+output "db_instance_port" {
+  description = "Puerto de la base de datos"
+  value       = module.rds.db_instance_port
+}
+
+output "db_name" {
+  description = "Nombre de la base de datos"
+  value       = module.rds.db_name
+}
+
+output "db_security_group_id" {
+  description = "ID del security group de la base de datos"
+  value       = module.rds.db_security_group_id
+}
