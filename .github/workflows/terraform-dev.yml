@@ -2,8 +2,7 @@ name: AWS
 on:
   push:
     branches: ["main"]       # tu única rama
-    paths:
-      - "infra/**"
+  workflow_dispatch:
 
 jobs:
   apply:
