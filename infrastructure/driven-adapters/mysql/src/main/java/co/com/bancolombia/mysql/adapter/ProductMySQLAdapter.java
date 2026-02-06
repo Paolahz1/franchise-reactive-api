@@ -17,17 +17,22 @@ public class ProductMySQLAdapter implements ProductRepository {
     private final ProductMapper productMapper;
 
     @Override
+    public Mono<Product> save(Product product) {
+        return Mono.fromSupplier(() -> productMapper.toEntity(product))
+            .flatMap(r2dbcRepository::save)
+            .map(productMapper::toDomain);
+    }
+
+    @Override
     public Mono<Product> findById(Long productId) {
         return r2dbcRepository.findById(productId)
             .map(productMapper::toDomain);
     }
 
     @Override
-    public Mono<Void> save(Product product) {
-        return Mono.just(product)
-            .map(productMapper::toEntity)
-            .flatMap(r2dbcRepository::save)
-            .then();
+    public Mono<Product> findByNameAndBranchId(String name, Long branchId) {
+        return r2dbcRepository.findByNameAndBranchId(name, branchId)
+            .map(productMapper::toDomain);
     }
 
     @Override

@@ -9,6 +9,9 @@ import reactor.core.publisher.Mono;
 
 public interface ProductR2dbcRepository extends R2dbcRepository<ProductEntity, Long> {
 
+    @Query("SELECT * FROM products WHERE name = :name AND branch_id = :branchId")
+    Mono<ProductEntity> findByNameAndBranchId(String name, Long branchId);
+
     @Modifying
     @Query("UPDATE products SET stock = :stock WHERE id = :id")
     Mono<Integer> updateStock(Long id, Integer stock);
