@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "this" {
-  bucket = "my-tf-test-bucket"
+  bucket = "my-test-paola"
 }
 
 resource "aws_s3_bucket_versioning" "this" {
