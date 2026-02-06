@@ -13,11 +13,15 @@ import jakarta.persistence.Id;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "franchises")
-public class FranchiseEntity {
+@Table(name = "products")
+public class ProductEntity {
 
     @Id
     private Long id;
 
     private String name;
+    
+    private Integer stock;
+    
+    private Long branchId;
 }

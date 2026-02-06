@@ -16,7 +16,7 @@ import java.util.List;
 public class Franchise {
 
     private Long id;
-    private Long name;
+    private String name;
     private List<Branch> branchList;
 
 }
