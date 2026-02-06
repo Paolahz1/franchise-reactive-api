@@ -21,14 +21,16 @@ public interface ProductR2dbcRepository extends R2dbcRepository<ProductEntity, L
         SELECT p.* 
         FROM products p
         INNER JOIN branches b ON p.branch_id = b.id
+        INNER JOIN (
+            SELECT branch_id, MAX(stock) as max_stock
+            FROM products
+            WHERE branch_id IN (
+                SELECT id FROM branches WHERE franchise_id = :franchiseId
+            )
+            GROUP BY branch_id
+        ) max_products ON p.branch_id = max_products.branch_id AND p.stock = max_products.max_stock
         WHERE b.franchise_id = :franchiseId
-        AND p.stock = (
-            SELECT MAX(p2.stock) 
-            FROM products p2 
-            INNER JOIN branches b2 ON p2.branch_id = b2.id
-            WHERE b2.franchise_id = :franchiseId
-        )
-        ORDER BY p.stock DESC, p.name
+        ORDER BY b.name, p.name
         """)
     Flux<ProductEntity> findMaxStockByFranchise(Long franchiseId);
 }

@@ -2,8 +2,11 @@ package co.com.bancolombia.api.router;
 
 import co.com.bancolombia.api.dto.FranchiseRequest;
 import co.com.bancolombia.api.dto.FranchiseResponse;
+import co.com.bancolombia.api.dto.ProductWithBranchResponse;
 import co.com.bancolombia.api.handler.FranchiseHandler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
@@ -25,6 +29,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class FranchiseRouter {
 
     private static final String FRANCHISE_PATH = "/api/franchises";
+    private static final String MAX_STOCK_PATH = "/api/franchises/{franchiseId}/max-stock-products";
 
     @Bean
     @RouterOperations({
@@ -69,9 +74,49 @@ public class FranchiseRouter {
                     )
                 }
             )
+        ),
+        @RouterOperation(
+            path = "/api/franchises/{franchiseId}/max-stock-products",
+            method = RequestMethod.GET,
+            beanClass = FranchiseHandler.class,
+            beanMethod = "getMaxStockProducts",
+            operation = @Operation(
+                operationId = "getMaxStockProducts",
+                summary = "Obtener productos con mayor stock por sucursal",
+                description = "Devuelve para una franquicia específica, el producto con mayor stock por cada sucursal. La respuesta incluye la información de la sucursal a la que pertenece cada producto.",
+                tags = {"Franchises"},
+                parameters = {
+                    @Parameter(
+                        name = "franchiseId",
+                        description = "ID de la franquicia",
+                        required = true,
+                        in = ParameterIn.PATH,
+                        schema = @Schema(type = "integer", format = "int64", example = "1")
+                    )
+                },
+                responses = {
+                    @ApiResponse(
+                        responseCode = "200",
+                        description = "Lista de productos con mayor stock por sucursal",
+                        content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ProductWithBranchResponse.class)
+                        )
+                    ),
+                    @ApiResponse(
+                        responseCode = "404",
+                        description = "Franquicia no encontrada"
+                    ),
+                    @ApiResponse(
+                        responseCode = "500",
+                        description = "Error interno del servidor"
+                    )
+                }
+            )
         )
     })
     public RouterFunction<ServerResponse> franchiseRoutes(FranchiseHandler handler) {
-        return route(POST(FRANCHISE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::createFranchise);
+        return route(POST(FRANCHISE_PATH).and(accept(MediaType.APPLICATION_JSON)), handler::createFranchise)
+                .andRoute(GET(MAX_STOCK_PATH), handler::getMaxStockProducts);
     }
 }
