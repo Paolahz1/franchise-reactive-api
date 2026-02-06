@@ -7,34 +7,37 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TechnicalMessage {
 
-    // Franchise errors
-    FRANCHISE_NOT_FOUND("FRA001", "La franquicia no fue encontrada"),
-    FRANCHISE_NAME_EMPTY("FRA002", "El nombre de la franquicia no puede estar vacío"),
-    FRANCHISE_NAME_DUPLICATE("FRA003", "Ya existe una franquicia con ese nombre"),
-    FRANCHISE_CREATION_ERROR("FRA004", "Error al crear la franquicia"),
+   // Franchise errors
+    FRANCHISE_NOT_FOUND("404", "Franchise not found", ""),
+    FRANCHISE_NAME_EMPTY("400", "Franchise name cannot be empty", ""),
+    FRANCHISE_NAME_ALREADY_EXISTS("409", "A franchise with this name already exists", ""),
+    FRANCHISE_NAME_DUPLICATE("409", "A franchise with this name already exists", ""),
+    FRANCHISE_CREATION_ERROR("500", "Error creating franchise", ""),
 
     // Branch errors
-    BRANCH_NOT_FOUND("BRA001", "La sucursal no fue encontrada"),
-    BRANCH_NAME_EMPTY("BRA002", "El nombre de la sucursal no puede estar vacío"),
-    BRANCH_NAME_DUPLICATE("BRA003", "Ya existe una sucursal con ese nombre en la franquicia"),
-    BRANCH_CREATION_ERROR("BRA004", "Error al agregar la sucursal a la franquicia"),
+    BRANCH_NOT_FOUND("404", "Branch not found", ""),
+    BRANCH_NAME_EMPTY("400", "Branch name cannot be empty", ""),
+    BRANCH_NAME_ALREADY_EXISTS("409", "A branch with this name already exists in the franchise", ""),
+    BRANCH_NAME_DUPLICATE("409", "A branch with this name already exists in the franchise", ""),
+    BRANCH_CREATION_ERROR("500", "Error adding branch to franchise", ""),
 
     // Product errors
-    PRODUCT_NOT_FOUND("PRO001", "El producto no fue encontrado"),
-    PRODUCT_NAME_EMPTY("PRO002", "El nombre del producto no puede estar vacío"),
-    PRODUCT_NAME_DUPLICATE("PRO003", "Ya existe un producto con ese nombre en la sucursal"),
-    PRODUCT_STOCK_INVALID("PRO004", "El stock del producto debe ser mayor o igual a cero"),
-    PRODUCT_CREATION_ERROR("PRO005", "Error al agregar el producto a la sucursal"),
-    PRODUCT_REMOVAL_ERROR("PRO006", "Error al eliminar el producto de la sucursal"),
+    PRODUCT_NOT_FOUND("404", "Product not found", ""),
+    PRODUCT_NAME_EMPTY("400", "Product name cannot be empty", ""),
+    PRODUCT_NAME_DUPLICATE("409", "A product with this name already exists in the branch", ""),
+    PRODUCT_STOCK_INVALID("400", "Product stock must be greater than or equal to zero", ""),
+    PRODUCT_CREATION_ERROR("500", "Error adding product to branch", ""),
+    PRODUCT_REMOVAL_ERROR("500", "Error removing product from branch", ""),
 
     // General validation errors
-    INVALID_ID("VAL001", "El identificador proporcionado no es válido"),
-    REQUIRED_FIELD_MISSING("VAL002", "Faltan campos requeridos en la solicitud"),
+    INVALID_ID("400", "The provided identifier is invalid", ""),
+    REQUIRED_FIELD_MISSING("400", "Required fields are missing in the request", ""),
 
-    // Technical errors (mensajes genéricos para el cliente)
-    INTERNAL_ERROR("TEC001", "Ha ocurrido un error interno, por favor intente más tarde"),
-    DATABASE_ERROR("TEC002", "Error de conexión con la base de datos");
+    // Technical errors
+    INTERNAL_ERROR("500", "An internal error occurred, please try again later", ""),
+    DATABASE_ERROR("500", "Database connection error", "");
 
     private final String code;
     private final String message;
+    private final String param;
 }

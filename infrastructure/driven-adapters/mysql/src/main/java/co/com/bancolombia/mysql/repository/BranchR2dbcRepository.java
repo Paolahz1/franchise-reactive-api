@@ -8,6 +8,9 @@ import reactor.core.publisher.Mono;
 
 public interface BranchR2dbcRepository extends R2dbcRepository<BranchEntity, Long> {
 
+    @Query("SELECT * FROM branches WHERE name = :name AND franchise_id = :franchiseId")
+    Mono<BranchEntity> findByNameAndFranchiseId(String name, Long franchiseId);
+
     @Modifying
     @Query("UPDATE branches SET name = :name WHERE id = :id")
     Mono<Integer> updateName(Long id, String name);

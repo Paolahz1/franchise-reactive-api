@@ -11,5 +11,7 @@ public interface FranchiseMapper {
     @Mapping(target = "branchList", ignore = true)
     Franchise toDomain(FranchiseEntity entity);
 
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     FranchiseEntity toEntity(Franchise franchise);
 }

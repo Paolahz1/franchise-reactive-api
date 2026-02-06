@@ -8,6 +8,9 @@ import reactor.core.publisher.Mono;
 
 public interface FranchiseR2dbcRepository extends R2dbcRepository<FranchiseEntity, Long> {
 
+    @Query("SELECT * FROM franchises WHERE name = :name")
+    Mono<FranchiseEntity> findByName(String name);
+
     @Modifying
     @Query("UPDATE franchises SET name = :name WHERE id = :id")
     Mono<Integer> updateName(Long id, String name);
