@@ -28,3 +28,73 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }
+
+# ============================================
+# RDS/MYSQL VARIABLES
+# ============================================
+
+variable "mysql_version" {
+  description = "Versión de MySQL"
+  type        = string
+  default     = "8.0.35"
+}
+
+variable "db_instance_class" {
+  description = "Clase de instancia RDS"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_allocated_storage" {
+  description = "Almacenamiento inicial en GB"
+  type        = number
+  default     = 20
+}
+
+variable "db_max_allocated_storage" {
+  description = "Almacenamiento máximo para autoscaling en GB"
+  type        = number
+  default     = 100
+}
+
+variable "db_name" {
+  description = "Nombre de la base de datos"
+  type        = string
+  default     = "franchises_db"
+}
+
+variable "db_master_username" {
+  description = "Usuario maestro de la base de datos"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_master_password" {
+  description = "Contraseña maestra de la base de datos"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_backup_retention_period" {
+  description = "Días de retención de backups"
+  type        = number
+  default     = 7
+}
+
+variable "db_multi_az" {
+  description = "Habilitar despliegue Multi-AZ"
+  type        = bool
+  default     = false
+}
+
+variable "db_skip_final_snapshot" {
+  description = "Omitir snapshot final al eliminar"
+  type        = bool
+  default     = false
+}
+
+variable "db_deletion_protection" {
+  description = "Habilitar protección contra eliminación"
+  type        = bool
+  default     = true
+}

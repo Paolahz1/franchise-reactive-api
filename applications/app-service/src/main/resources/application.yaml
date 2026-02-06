@@ -5,9 +5,17 @@ spring:
     name: "ServiceFranchise"
   devtools:
     add-properties: false
+  r2dbc:
+    url: r2dbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:franchises_db}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:ChangeThisPassword123!}
+    pool:
+      initial-size: 10
+      max-size: 20
+      max-idle-time: 30m
   h2:
     console:
-      enabled: true
+      enabled: false
       path: "/h2"
   profiles:
     include: null
