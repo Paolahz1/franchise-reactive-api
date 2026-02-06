@@ -12,3 +12,13 @@ module "networking" {
   availability_zones = var.availability_zones
 }
 
+# ============================================
+# FASE 2: ECR (Repositorio Docker)
+# ============================================
+
+module "ecr" {
+  source = "./modules/ecr"
+
+  project = var.project
+  env     = var.env
+}
