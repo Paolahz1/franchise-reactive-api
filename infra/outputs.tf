@@ -21,3 +21,17 @@ output "private_subnet_ids" {
   description = "IDs de las subnets privadas (para ECS y RDS)"
   value       = module.networking.private_subnet_ids
 }
+
+# ============================================
+# ECR OUTPUTS
+# ============================================
+
+output "ecr_repository_url" {
+  description = "URL del repositorio ECR (para docker push)"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "Nombre del repositorio ECR"
+  value       = module.ecr.repository_name
+}
