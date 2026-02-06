@@ -2,7 +2,7 @@ package co.com.bancolombia.api.router;
 
 import co.com.bancolombia.api.dto.FranchiseRequest;
 import co.com.bancolombia.api.dto.FranchiseResponse;
-import co.com.bancolombia.api.dto.ProductWithBranchResponse;
+import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
 import co.com.bancolombia.api.handler.FranchiseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -83,7 +83,7 @@ public class FranchiseRouter {
             operation = @Operation(
                 operationId = "getMaxStockProducts",
                 summary = "Obtener productos con mayor stock por sucursal",
-                description = "Devuelve para una franquicia específica, el producto con mayor stock por cada sucursal. La respuesta incluye la información de la sucursal a la que pertenece cada producto.",
+                description = "Devuelve una franquicia con todas sus sucursales y para cada sucursal el producto con mayor stock",
                 tags = {"Franchises"},
                 parameters = {
                     @Parameter(
@@ -97,10 +97,10 @@ public class FranchiseRouter {
                 responses = {
                     @ApiResponse(
                         responseCode = "200",
-                        description = "Lista de productos con mayor stock por sucursal",
+                        description = "Franquicia con sus sucursales y productos top",
                         content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ProductWithBranchResponse.class)
+                            schema = @Schema(implementation = FranchiseWithMaxStockProductsResponse.class)
                         )
                     ),
                     @ApiResponse(

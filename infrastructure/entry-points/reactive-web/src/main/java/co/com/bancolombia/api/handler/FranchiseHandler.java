@@ -1,8 +1,10 @@
 package co.com.bancolombia.api.handler;
 
+import co.com.bancolombia.api.dto.BranchWithTopProductResponse;
 import co.com.bancolombia.api.dto.FranchiseRequest;
 import co.com.bancolombia.api.dto.FranchiseResponse;
-import co.com.bancolombia.api.dto.ProductWithBranchResponse;
+import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
+import co.com.bancolombia.api.dto.TopProductResponse;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.createfranchise.CreateFranchiseUseCase;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -36,21 +40,28 @@ public class FranchiseHandler {
 
     public Mono<ServerResponse> getMaxStockProducts(ServerRequest request) {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
-                .flatMapMany(franchiseId ->
+                .flatMap(franchiseId ->
                     getMaxStockProductsByFranchiseUseCase.execute(franchiseId)
-                        .map(productWithBranch ->
-                            ProductWithBranchResponse.builder()
-                                    .productId(productWithBranch.getProduct().getId())
-                                    .productName(productWithBranch.getProduct().getName())
-                                    .stock(productWithBranch.getProduct().getStock())
-                                    .branchId(productWithBranch.getBranch().getId())
-                                    .branchName(productWithBranch.getBranch().getName())
-                                    .build()
-                        )
+                        .map(result -> FranchiseWithMaxStockProductsResponse.builder()
+                                .franchiseId(result.getFranchise().getId())
+                                .franchiseName(result.getFranchise().getName())
+                                .branches(
+                                    result.getBranchesWithTopProducts().stream()
+                                        .map(branchWithProduct -> BranchWithTopProductResponse.builder()
+                                                .branchId(branchWithProduct.getBranch().getId())
+                                                .branchName(branchWithProduct.getBranch().getName())
+                                                .topProduct(TopProductResponse.builder()
+                                                        .productId(branchWithProduct.getTopProduct().getId())
+                                                        .productName(branchWithProduct.getTopProduct().getName())
+                                                        .stock(branchWithProduct.getTopProduct().getStock())
+                                                        .build())
+                                                .build())
+                                        .collect(Collectors.toList())
+                                )
+                                .build())
                 )
-                .collectList()
-                .flatMap(products -> ServerResponse.ok()
+                .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(products));
+                        .bodyValue(response));
     }
 }
