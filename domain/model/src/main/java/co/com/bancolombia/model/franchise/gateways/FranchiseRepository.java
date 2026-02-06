@@ -9,5 +9,7 @@ public interface FranchiseRepository {
 
     Mono<Franchise> findById(Long franchiseId);
 
+    Mono<Franchise> findByName(String name);
+
     Mono<Void> updateName(Long franchiseId, String newName);
 }

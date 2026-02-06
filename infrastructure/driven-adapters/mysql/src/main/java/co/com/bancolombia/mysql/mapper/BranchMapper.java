@@ -11,6 +11,7 @@ public interface BranchMapper {
     @Mapping(target = "productList", ignore = true)
     Branch toDomain(BranchEntity entity);
 
-    @Mapping(target = "franchiseId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     BranchEntity toEntity(Branch branch);
 }

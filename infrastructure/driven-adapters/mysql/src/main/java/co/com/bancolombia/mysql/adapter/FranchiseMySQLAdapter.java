@@ -6,8 +6,10 @@ import co.com.bancolombia.mysql.mapper.FranchiseMapper;
 import co.com.bancolombia.mysql.repository.FranchiseR2dbcRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+@Repository
 @Component
 @RequiredArgsConstructor
 public class FranchiseMySQLAdapter implements FranchiseRepository {
@@ -17,8 +19,7 @@ public class FranchiseMySQLAdapter implements FranchiseRepository {
 
     @Override
     public Mono<Franchise> save(Franchise franchise) {
-        return Mono.just(franchise)
-            .map(franchiseMapper::toEntity)
+        return Mono.fromSupplier(() -> franchiseMapper.toEntity(franchise))
             .flatMap(r2dbcRepository::save)
             .map(franchiseMapper::toDomain);
     }
@@ -26,6 +27,12 @@ public class FranchiseMySQLAdapter implements FranchiseRepository {
     @Override
     public Mono<Franchise> findById(Long franchiseId) {
         return r2dbcRepository.findById(franchiseId)
+            .map(franchiseMapper::toDomain);
+    }
+
+    @Override
+    public Mono<Franchise> findByName(String name) {
+        return r2dbcRepository.findByName(name)
             .map(franchiseMapper::toDomain);
     }
 

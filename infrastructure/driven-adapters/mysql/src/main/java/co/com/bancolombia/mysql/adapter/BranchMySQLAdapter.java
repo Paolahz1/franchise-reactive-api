@@ -16,8 +16,21 @@ public class BranchMySQLAdapter implements BranchRepository {
     private final BranchMapper branchMapper;
 
     @Override
+    public Mono<Branch> save(Branch branch) {
+        return Mono.fromSupplier(() -> branchMapper.toEntity(branch))
+                .flatMap(r2dbcRepository::save)
+                .map(branchMapper::toDomain);
+    }
+
+    @Override
     public Mono<Branch> findById(Long branchId) {
         return r2dbcRepository.findById(branchId)
+            .map(branchMapper::toDomain);
+    }
+
+    @Override
+    public Mono<Branch> findByNameAndFranchiseId(String name, Long franchiseId) {
+        return r2dbcRepository.findByNameAndFranchiseId(name, franchiseId)
             .map(branchMapper::toDomain);
     }
 

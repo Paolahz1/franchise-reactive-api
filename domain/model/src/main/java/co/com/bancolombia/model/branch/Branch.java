@@ -14,5 +14,6 @@ public class Branch {
 
     private Long id;
     private String name;
+    private Long franchiseId;
     private List<Product> productList;
 }

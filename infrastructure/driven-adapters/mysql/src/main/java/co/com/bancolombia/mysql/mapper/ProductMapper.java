@@ -10,6 +10,7 @@ public interface ProductMapper {
 
     Product toDomain(ProductEntity entity);
 
-    @Mapping(target = "branchId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     ProductEntity toEntity(Product product);
 }

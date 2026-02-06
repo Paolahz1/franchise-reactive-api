@@ -1,11 +1,16 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.model.branch.gateways.BranchRepository;
+import co.com.bancolombia.model.franchise.gateways.FranchiseRepository;
+import co.com.bancolombia.model.product.gateways.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class UseCasesConfigTest {
 
@@ -22,7 +27,7 @@ class UseCasesConfigTest {
                 }
             }
 
-            assertTrue(useCaseBeanFound, "No beans ending with 'Use Case' were found");
+            assertTrue(useCaseBeanFound, "No beans ending with 'UseCase' were found");
         }
     }
 
@@ -31,14 +36,18 @@ class UseCasesConfigTest {
     static class TestConfig {
 
         @Bean
-        public MyUseCase myUseCase() {
-            return new MyUseCase();
+        public FranchiseRepository franchiseRepository() {
+            return mock(FranchiseRepository.class);
         }
-    }
 
-    static class MyUseCase {
-        public String execute() {
-            return "MyUseCase Test";
+        @Bean
+        public BranchRepository branchRepository() {
+            return mock(BranchRepository.class);
+        }
+
+        @Bean
+        public ProductRepository productRepository() {
+            return mock(ProductRepository.class);
         }
     }
 }
