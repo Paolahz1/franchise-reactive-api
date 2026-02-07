@@ -23,6 +23,25 @@ output "private_subnet_ids" {
 }
 
 # ============================================
+# ECR OUTPUTS
+# ============================================
+
+output "ecr_repository_url" {
+  description = "URL del repositorio ECR"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_arn" {
+  description = "ARN del repositorio ECR"
+  value       = module.ecr.repository_arn
+}
+
+output "ecr_repository_name" {
+  description = "Nombre del repositorio ECR"
+  value       = module.ecr.repository_name
+}
+
+# ============================================
 # RDS OUTPUTS
 # ============================================
 
@@ -82,6 +101,11 @@ output "alb_arn" {
 output "alb_target_group_arn" {
   description = "ARN del Target Group (usado por ECS)"
   value       = module.alb.target_group_arn
+}
+
+output "alb_security_group_id" {
+  description = "ID del Security Group del ALB"
+  value       = module.alb.alb_security_group_id
 }
 
 output "api_url" {

@@ -1,4 +1,9 @@
-resource "aws_db_subnet_group" "this" {
+# ============================================
+# RDS - MySQL Database
+# ============================================
+
+# Subnet Group para RDS
+resource "aws_db_subnet_group" "main" {
   name       = "${var.project_name}-${var.environment}-db-subnet-group"
   subnet_ids = var.subnet_ids
 
@@ -9,7 +14,8 @@ resource "aws_db_subnet_group" "this" {
   }
 }
 
-resource "aws_security_group" "rds" {
+# Security Group para RDS
+resource "aws_security_group" "main" {
   name        = "${var.project_name}-${var.environment}-rds-sg"
   description = "Security group for RDS MySQL instance"
   vpc_id      = var.vpc_id
@@ -37,7 +43,8 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_db_parameter_group" "this" {
+# Parameter Group para MySQL
+resource "aws_db_parameter_group" "main" {
   name   = "${var.project_name}-${var.environment}-mysql-params"
   family = "mysql8.0"
 
@@ -63,7 +70,8 @@ resource "aws_db_parameter_group" "this" {
   }
 }
 
-resource "aws_db_instance" "this" {
+# RDS Instance
+resource "aws_db_instance" "main" {
   identifier     = "${var.project_name}-${var.environment}-mysql"
   engine         = "mysql"
   engine_version = var.mysql_version
@@ -78,9 +86,9 @@ resource "aws_db_instance" "this" {
   username = var.master_username
   password = var.master_password
 
-  db_subnet_group_name   = aws_db_subnet_group.this.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  parameter_group_name   = aws_db_parameter_group.this.name
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.main.id]
+  parameter_group_name   = aws_db_parameter_group.main.name
 
   backup_retention_period = var.backup_retention_period
   backup_window           = var.backup_window
@@ -91,10 +99,10 @@ resource "aws_db_instance" "this" {
 
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
 
-  multi_az               = var.multi_az
-  publicly_accessible    = var.publicly_accessible
-  deletion_protection    = var.deletion_protection
-  copy_tags_to_snapshot  = true
+  multi_az                   = var.multi_az
+  publicly_accessible        = var.publicly_accessible
+  deletion_protection        = var.deletion_protection
+  copy_tags_to_snapshot      = true
   auto_minor_version_upgrade = true
 
   tags = {

@@ -1,5 +1,9 @@
+# ============================================
+# BASTION HOST - Para acceso a RDS via SSM
+# ============================================
+
 # IAM Role para instancia bastion con SSM
-resource "aws_iam_role" "bastion_role" {
+resource "aws_iam_role" "main" {
   name = "${var.project}-${var.env}-bastion-role"
 
   assume_role_policy = jsonencode({
@@ -23,19 +27,19 @@ resource "aws_iam_role" "bastion_role" {
 }
 
 # Attach SSM policy
-resource "aws_iam_role_policy_attachment" "bastion_ssm" {
-  role       = aws_iam_role.bastion_role.name
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.main.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 # Instance profile
-resource "aws_iam_instance_profile" "bastion_profile" {
+resource "aws_iam_instance_profile" "main" {
   name = "${var.project}-${var.env}-bastion-profile"
-  role = aws_iam_role.bastion_role.name
+  role = aws_iam_role.main.name
 }
 
 # Security group for bastion
-resource "aws_security_group" "bastion" {
+resource "aws_security_group" "main" {
   name        = "${var.project}-${var.env}-bastion-sg"
   description = "Security group for bastion instance"
   vpc_id      = var.vpc_id
@@ -74,12 +78,12 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 # Bastion instance
-resource "aws_instance" "bastion" {
+resource "aws_instance" "main" {
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = "t3.micro"
   subnet_id              = var.private_subnet_id
-  vpc_security_group_ids = [aws_security_group.bastion.id]
-  iam_instance_profile   = aws_iam_instance_profile.bastion_profile.name
+  vpc_security_group_ids = [aws_security_group.main.id]
+  iam_instance_profile   = aws_iam_instance_profile.main.name
 
   user_data = <<-EOF
               #!/bin/bash

@@ -37,11 +37,5 @@ variable "health_check_path" {
 variable "enable_deletion_protection" {
   description = "Protección contra eliminación accidental del ALB"
   type        = bool
-  default     = false  # false en dev, true en prod
+  default     = false
 }
-
-# variable "ssl_certificate_arn" {
-#   description = "ARN del certificado SSL en AWS Certificate Manager (para HTTPS)"
-#   type        = string
-#   default     = ""
-# }

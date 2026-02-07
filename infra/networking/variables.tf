@@ -1,3 +1,7 @@
+# ============================================
+# Variables de entrada del módulo Networking
+# ============================================
+
 variable "project" {
   description = "Nombre del proyecto"
   type        = string

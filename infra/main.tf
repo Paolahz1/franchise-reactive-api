@@ -4,7 +4,7 @@
 # VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables
 
 module "networking" {
-  source = "./modules/networking"
+  source = "./networking"
 
   project            = var.project
   env                = var.env
@@ -17,7 +17,7 @@ module "networking" {
 # ============================================
 
 module "ecr" {
-  source = "./modules/ecr"
+  source = "./ecr"
 
   project = var.project
   env     = var.env
@@ -28,12 +28,12 @@ module "ecr" {
 # ============================================
 
 module "rds" {
-  source = "./modules/rds"
+  source = "./rds"
 
   project_name    = var.project
   environment     = var.env
   vpc_id          = module.networking.vpc_id
-  subnet_ids      = module.networking.private_subnet_ids  # Back to private subnets
+  subnet_ids      = module.networking.private_subnet_ids
   allowed_cidr_blocks = [var.vpc_cidr]
 
   mysql_version       = var.mysql_version
@@ -57,7 +57,7 @@ module "rds" {
 # ============================================
 
 module "bastion" {
-  source = "./modules/bastion"
+  source = "./bastion"
 
   project           = var.project
   env               = var.env
@@ -70,14 +70,15 @@ module "bastion" {
 # ============================================
 
 module "alb" {
-  source = "./modules/alb"
+  source = "./alb"
 
   project            = var.project
   env                = var.env
   vpc_id             = module.networking.vpc_id
-  public_subnet_ids  = module.networking.public_subnet_ids  # ALB en subnets públicas
+  public_subnet_ids  = module.networking.public_subnet_ids
 
   container_port               = var.container_port
   health_check_path            = var.health_check_path
   enable_deletion_protection   = var.alb_deletion_protection
 }
+

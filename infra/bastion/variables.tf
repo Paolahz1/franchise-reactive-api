@@ -1,3 +1,7 @@
+# ============================================
+# Variables de entrada del módulo Bastion
+# ============================================
+
 variable "project" {
   description = "Project name"
   type        = string
