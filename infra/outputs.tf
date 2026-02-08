@@ -112,3 +112,47 @@ output "api_url" {
   description = "URL completa de la API"
   value       = "http://${module.alb.alb_dns_name}"
 }
+
+# ============================================
+# ECS OUTPUTS
+# ============================================
+
+output "ecs_cluster_name" {
+  description = "Nombre del ECS Cluster"
+  value       = module.ecs.cluster_name
+}
+
+output "ecs_cluster_arn" {
+  description = "ARN del ECS Cluster"
+  value       = module.ecs.cluster_arn
+}
+
+output "ecs_service_name" {
+  description = "Nombre del ECS Service"
+  value       = module.ecs.service_name
+}
+
+output "ecs_service_arn" {
+  description = "ARN del ECS Service"
+  value       = module.ecs.service_arn
+}
+
+output "ecs_task_definition_arn" {
+  description = "ARN de la Task Definition"
+  value       = module.ecs.task_definition_arn
+}
+
+output "ecs_task_definition_family" {
+  description = "Family de la Task Definition"
+  value       = module.ecs.task_definition_family
+}
+
+output "ecs_log_group_name" {
+  description = "Nombre del CloudWatch Log Group"
+  value       = module.ecs.log_group_name
+}
+
+output "ecs_security_group_id" {
+  description = "ID del Security Group de ECS Tasks"
+  value       = module.ecs.ecs_security_group_id
+}

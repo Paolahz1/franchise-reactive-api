@@ -82,3 +82,71 @@ module "alb" {
   enable_deletion_protection   = var.alb_deletion_protection
 }
 
+# ============================================
+# FASE 6: ECS (Elastic Container Service)
+# ============================================
+
+module "ecs" {
+  source = "./ecs"
+
+  project_name       = var.project
+  environment        = var.env
+  aws_region         = var.aws_region
+  
+  # Networking
+  vpc_id                 = module.networking.vpc_id
+  private_subnet_ids     = module.networking.private_subnet_ids
+  alb_security_group_id  = module.alb.alb_security_group_id
+  alb_target_group_arn   = module.alb.target_group_arn
+  
+  # ECR
+  ecr_repository_url = module.ecr.repository_url
+  
+  # Database
+  db_host     = module.rds.db_instance_endpoint
+  db_port     = 3306
+  db_name     = var.db_name
+  db_username = var.db_master_username
+  db_password = var.db_master_password
+  
+  # ECS Task Configuration
+  task_cpu       = var.ecs_task_cpu
+  task_memory    = var.ecs_task_memory
+  container_name = var.container_name
+  container_port = var.container_port
+  
+  # ECS Service Configuration
+  desired_count = var.ecs_desired_count
+  min_capacity  = var.ecs_min_capacity
+  max_capacity  = var.ecs_max_capacity
+  
+  # Auto-scaling thresholds
+  cpu_target_value    = var.ecs_cpu_target
+  memory_target_value = var.ecs_memory_target
+  
+  # Logging
+  log_retention_days = var.ecs_log_retention_days
+
+  tags = {
+    Project     = var.project
+    Environment = var.env
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ============================================
+# SECURITY GROUP RULE: Allow ECS to access RDS
+# ============================================
+
+resource "aws_security_group_rule" "rds_from_ecs" {
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = module.ecs.ecs_security_group_id
+  security_group_id        = module.rds.db_security_group_id
+  description              = "Allow MySQL access from ECS tasks"
+}
+
+
+

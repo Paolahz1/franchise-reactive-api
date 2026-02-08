@@ -1,7 +1,7 @@
 # ============================================
 # ECR - Elastic Container Registry
 # ============================================
-# Repositorio Docker para almacenar imágenes de la aplicación
+# Repositorio para almacenar imágenes de la aplicación
 
 resource "aws_ecr_repository" "main" {
   name                 = "${var.project}-${var.env}"
