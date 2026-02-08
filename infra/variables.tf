@@ -126,3 +126,61 @@ variable "alb_deletion_protection" {
   type        = bool
   default     = false
 }
+
+# ============================================
+# ECS VARIABLES
+# ============================================
+
+variable "ecs_task_cpu" {
+  description = "CPU units para ECS task (256, 512, 1024, 2048, 4096)"
+  type        = string
+  default     = "512"
+}
+
+variable "ecs_task_memory" {
+  description = "Memoria para ECS task en MB"
+  type        = string
+  default     = "1024"
+}
+
+variable "container_name" {
+  description = "Nombre del contenedor"
+  type        = string
+  default     = "franchise-api"
+}
+
+variable "ecs_desired_count" {
+  description = "Número deseado de tasks ECS"
+  type        = number
+  default     = 2
+}
+
+variable "ecs_min_capacity" {
+  description = "Mínimo número de tasks para auto-scaling"
+  type        = number
+  default     = 1
+}
+
+variable "ecs_max_capacity" {
+  description = "Máximo número de tasks para auto-scaling"
+  type        = number
+  default     = 4
+}
+
+variable "ecs_cpu_target" {
+  description = "Target de CPU para auto-scaling (%)"
+  type        = number
+  default     = 70
+}
+
+variable "ecs_memory_target" {
+  description = "Target de memoria para auto-scaling (%)"
+  type        = number
+  default     = 80
+}
+
+variable "ecs_log_retention_days" {
+  description = "Días de retención de logs en CloudWatch"
+  type        = number
+  default     = 7
+}

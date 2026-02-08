@@ -5,7 +5,7 @@
 # y lo distribuye a los contenedores ECS
 
 # Security Group para el ALB
-resource "aws_security_group" "alb" {
+resource "aws_security_group" "main" {
   name        = "${var.project}-${var.env}-alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = var.vpc_id
@@ -45,22 +45,15 @@ resource "aws_security_group" "alb" {
 }
 
 # Application Load Balancer
-resource "aws_lb" "this" {
+resource "aws_lb" "main" {
   name               = "${var.project}-${var.env}-alb"
   internal           = false  # ALB público (accesible desde Internet)
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [aws_security_group.main.id]
   subnets            = var.public_subnet_ids  # Debe estar en subnets públicas
 
   # Protección contra eliminación accidental
   enable_deletion_protection = var.enable_deletion_protection
-
-  # Logs de acceso a S3 (opcional, comentado para ahorrar costos)
-  # access_logs {
-  #   bucket  = aws_s3_bucket.lb_logs.id
-  #   prefix  = "alb"
-  #   enabled = true
-  # }
 
   tags = {
     Name        = "${var.project}-${var.env}-alb"
@@ -71,7 +64,7 @@ resource "aws_lb" "this" {
 
 # Target Group para ECS
 # Grupo de destinos donde el ALB enviará el tráfico
-resource "aws_lb_target_group" "ecs" {
+resource "aws_lb_target_group" "main" {
   name        = "${var.project}-${var.env}-ecs-tg"
   port        = var.container_port  # Puerto donde corre Spring Boot (8080)
   protocol    = "HTTP"
@@ -103,39 +96,14 @@ resource "aws_lb_target_group" "ecs" {
 
 # Listener HTTP (puerto 80)
 # Escucha peticiones HTTP y las redirige al Target Group
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.this.arn
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
   # Acción por defecto: enviar tráfico al Target Group de ECS
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ecs.arn
+    target_group_arn = aws_lb_target_group.main.arn
   }
-
-  # Si tuvieras HTTPS configurado, podrías redirigir HTTP → HTTPS:
-  # default_action {
-  #   type = "redirect"
-  #   redirect {
-  #     port        = "443"
-  #     protocol    = "HTTPS"
-  #     status_code = "HTTP_301"
-  #   }
-  # }
 }
-
-# Listener HTTPS (puerto 443) - OPCIONAL
-# Descomenta esto cuando tengas un certificado SSL en ACM
-# resource "aws_lb_listener" "https" {
-#   load_balancer_arn = aws_lb.main.arn
-#   port              = 443
-#   protocol          = "HTTPS"
-#   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-#   certificate_arn   = var.ssl_certificate_arn  # ARN del certificado en ACM
-#
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.ecs.arn
-#   }
-# }

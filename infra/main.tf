@@ -4,7 +4,7 @@
 # VPC, Subnets, Internet Gateway, NAT Gateway, Route Tables
 
 module "networking" {
-  source = "./modules/networking"
+  source = "./networking"
 
   project            = var.project
   env                = var.env
@@ -17,7 +17,7 @@ module "networking" {
 # ============================================
 
 module "ecr" {
-  source = "./modules/ecr"
+  source = "./ecr"
 
   project = var.project
   env     = var.env
@@ -28,12 +28,12 @@ module "ecr" {
 # ============================================
 
 module "rds" {
-  source = "./modules/rds"
+  source = "./rds"
 
   project_name    = var.project
   environment     = var.env
   vpc_id          = module.networking.vpc_id
-  subnet_ids      = module.networking.private_subnet_ids  # Back to private subnets
+  subnet_ids      = module.networking.private_subnet_ids
   allowed_cidr_blocks = [var.vpc_cidr]
 
   mysql_version       = var.mysql_version
@@ -57,7 +57,7 @@ module "rds" {
 # ============================================
 
 module "bastion" {
-  source = "./modules/bastion"
+  source = "./bastion"
 
   project           = var.project
   env               = var.env
@@ -70,14 +70,83 @@ module "bastion" {
 # ============================================
 
 module "alb" {
-  source = "./modules/alb"
+  source = "./alb"
 
   project            = var.project
   env                = var.env
   vpc_id             = module.networking.vpc_id
-  public_subnet_ids  = module.networking.public_subnet_ids  # ALB en subnets públicas
+  public_subnet_ids  = module.networking.public_subnet_ids
 
   container_port               = var.container_port
   health_check_path            = var.health_check_path
   enable_deletion_protection   = var.alb_deletion_protection
 }
+
+# ============================================
+# FASE 6: ECS (Elastic Container Service)
+# ============================================
+
+module "ecs" {
+  source = "./ecs"
+
+  project_name       = var.project
+  environment        = var.env
+  aws_region         = var.aws_region
+  
+  # Networking
+  vpc_id                 = module.networking.vpc_id
+  private_subnet_ids     = module.networking.private_subnet_ids
+  alb_security_group_id  = module.alb.alb_security_group_id
+  alb_target_group_arn   = module.alb.target_group_arn
+  
+  # ECR
+  ecr_repository_url = module.ecr.repository_url
+  
+  # Database
+  db_host     = module.rds.db_instance_endpoint
+  db_port     = 3306
+  db_name     = var.db_name
+  db_username = var.db_master_username
+  db_password = var.db_master_password
+  
+  # ECS Task Configuration
+  task_cpu       = var.ecs_task_cpu
+  task_memory    = var.ecs_task_memory
+  container_name = var.container_name
+  container_port = var.container_port
+  
+  # ECS Service Configuration
+  desired_count = var.ecs_desired_count
+  min_capacity  = var.ecs_min_capacity
+  max_capacity  = var.ecs_max_capacity
+  
+  # Auto-scaling thresholds
+  cpu_target_value    = var.ecs_cpu_target
+  memory_target_value = var.ecs_memory_target
+  
+  # Logging
+  log_retention_days = var.ecs_log_retention_days
+
+  tags = {
+    Project     = var.project
+    Environment = var.env
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ============================================
+# SECURITY GROUP RULE: Allow ECS to access RDS
+# ============================================
+
+resource "aws_security_group_rule" "rds_from_ecs" {
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = module.ecs.ecs_security_group_id
+  security_group_id        = module.rds.db_security_group_id
+  description              = "Allow MySQL access from ECS tasks"
+}
+
+
+

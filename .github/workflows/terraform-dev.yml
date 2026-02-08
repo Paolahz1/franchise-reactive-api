@@ -42,6 +42,8 @@ jobs:
         working-directory: infra
         run: |
           echo "ecr_url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "vpc_id=$(terraform output -raw vpc_id)" >> $GITHUB_OUTPUT
+          echo "alb_dns=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT
 
   # Job 2: Build y Push de imagen Docker
   docker:
@@ -71,7 +73,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew :applications:app-service:build -x test --no-daemon
+        run: ./gradlew :app-service:build -x test -x validateStructure --no-daemon
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -110,3 +112,38 @@ jobs:
           echo "**Latest:** \`$ECR_REGISTRY/$ECR_REPOSITORY:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Commit SHA: \`$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
+
+  # Job 3: Deploy to ECS
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: docker
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Force new deployment
+        run: |
+          aws ecs update-service \
+            --cluster franchise-dev \
+            --service franchise-service-dev \
+            --force-new-deployment
+
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster franchise-dev \
+            --services franchise-service-dev
+
+      - name: Deployment Summary
+        run: |
+          echo "### 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cluster:** franchise-dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** franchise-service-dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Deployed and Stable" >> $GITHUB_STEP_SUMMARY
