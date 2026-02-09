@@ -34,7 +34,7 @@ El proyecto fue generado usando el plugin de Gradle `co.com.bancolombia.cleanArc
 - **Gradle 8.x** - Sistema de construcción
 - **[Scaffold Clean Architecture Plugin](https://bancolombia.github.io/scaffold-clean-architecture/) 4.0.5** - Plugin de Bancolombia para generación de estructura Clean Architecture
 - **JUnit 5** - Testing
-- **Testcontainers** - Tests de integración con contenedores Docker
+
 
 ### Infrastructure
 - **Terraform** - Infrastructure as Code
@@ -131,14 +131,8 @@ La aplicación está desplegada en AWS con los siguientes componentes:
 
 ## ⚙️ Configuración Local
 
-### 1. Clonar el repositorio
 
-```bash
-git clone <repository-url>
-cd Service-franchise
-```
-
-### 2. Configurar base de datos local
+###  Configurar base de datos local
 
 Para desarrollo local se usa **MySQL instalado en tu máquina**. Los defaults del `application.yaml` ya apuntan a `localhost:3306` con usuario `root`.
 
@@ -157,19 +151,8 @@ export DB_PASSWORD=TuPasswordLocal
 
 ### 3. Variables de entorno
 
-La aplicación usa variables de entorno para las credenciales (nunca hardcodeadas).  
-Copia el archivo de ejemplo y llénalo con tus valores:
+La aplicación usa variables de entorno para las credenciales.  
 
-```bash
-cp .env.example .env
-# Edita .env con tus credenciales
-```
-
-O expórtalas manualmente:
-
-```bash
-export DB_PASSWORD=TuPasswordLocal
-```
 
 Para desarrollo local solo es necesario configurar `DB_PASSWORD`, ya que los demás valores tienen defaults que apuntan a MySQL local:
 
@@ -179,7 +162,7 @@ Para desarrollo local solo es necesario configurar `DB_PASSWORD`, ya que los dem
 | `DB_PORT` | `3306` | Puerto de MySQL |
 | `DB_NAME` | `franchises_db` | Nombre de la base de datos |
 | `DB_USERNAME` | `root` | Usuario de MySQL |
-| `DB_PASSWORD` | *(vacío)* | Contraseña (requerida, nunca en código) |
+| `DB_PASSWORD` | *(vacío)* | Contraseña (requerida) |
 
 ## Ejecución Local
 
@@ -212,11 +195,6 @@ La aplicación estará disponible en:
 ```bash
 # Health check
 curl http://localhost:8080/actuator/health
-
-# Crear una franquicia
-curl -X POST http://localhost:8080/api/franchises \
-  -H "Content-Type: application/json" \
-  -d '{"name": "Starbucks"}'
 ```
 
 ## API Endpoints
@@ -250,71 +228,44 @@ Documentación completa en: http://localhost:8080/webjars/swagger-ui/index.html
 
 ## Docker
 
-El proyecto está completamente dockerizado para facilitar el despliegue en cualquier entorno.
+El proyecto usa Docker para el despliegue en AWS. El `Dockerfile` usa multi-stage build para crear una imagen optimizada que se sube automáticamente a ECR mediante el CI/CD.
 
-### Build local
+### Build local de la imagen
 
-**Multi-stage build:**
-```bash
-cd deployment
-./build-image.sh latest
-```
-
-Esto crea una imagen optimizada usando multi-stage build (compile + runtime).
-
-**Build manual (si ya tienes el JAR):**
 ```bash
 # 1. Compilar JAR
-./gradlew :applications:app-service:build -x test
+./gradlew :app-service:build -x test
 
-# 2. Build imagen
+# 2. Build imagen Docker
 docker build -f deployment/Dockerfile -t franchise-service:latest .
 ```
 
-### Ejecutar con Docker
+### Probar imagen localmente (opcional)
 
-**Opción 1: Solo la app (requiere MySQL externo)**
+Si quieres probar la imagen Docker conectada a tu MySQL local:
+
 ```bash
 docker run -p 8080:8080 \
-  -e SPRING_R2DBC_URL=r2dbc:mysql://host.docker.internal:3306/franchises_db \
-  -e SPRING_R2DBC_USERNAME=root \
-  -e SPRING_R2DBC_PASSWORD=$DB_PASSWORD \
+  -e DB_HOST=host.docker.internal \
+  -e DB_PORT=3306 \
+  -e DB_USERNAME=root \
+  -e DB_PASSWORD=$DB_PASSWORD \
   franchise-service:latest
 ```
 
-**Opción 2: App + MySQL con docker-compose (desarrollo local)**
-```bash
-cd deployment
-docker-compose up -d
-```
+> **Nota**: Para desarrollo local es más simple usar `./gradlew bootRun` directamente.
 
-Esto levanta:
-- **franchise-api**: La aplicación en http://localhost:8080
-- **mysql**: Base de datos MySQL con schema pre-cargado
+### Deploy a AWS ECR
 
-Para detener:
-```bash
-docker-compose down
-```
+El CI/CD de GitHub Actions se encarga automáticamente de:
+1. Compilar la aplicación
+2. Construir la imagen Docker
+3. Subirla a AWS ECR
+4. Desplegarla en ECS
 
-### Push a AWS ECR
+Cada push a `main` ejecuta el workflow completo.
 
-**Proceso completo (build + push):**
-```bash
-cd deployment
-./deploy-docker.sh v1.0.0
-```
-
-**Paso a paso manual:**
-```bash
-# 1. Build
-./build-image.sh v1.0.0
-
-# 2. Push a ECR
-./push-to-ecr.sh v1.0.0 us-east-1
-```
-
-**Verificar imagen en ECR:**
+**Verificar imágenes en ECR:**
 ```bash
 aws ecr describe-images \
   --repository-name franchise-service \
@@ -336,14 +287,6 @@ aws ecr describe-images \
 
 La infraestructura está completamente definida como código con Terraform.
 
-### Recursos desplegados
-
-- **VPC** con subnets públicas y privadas
-- **RDS MySQL 8.0.45** en subnet privada (sin acceso público)
-- **NAT Gateway** para salida a internet desde subnets privadas
-- **EC2 Bastion** con Systems Manager (sin SSH keys)
-- **ECR Repository** para imágenes Docker
-- **S3 + DynamoDB** para remote state de Terraform
 
 ### Desplegar infraestructura
 
@@ -404,12 +347,6 @@ cd infra
 mysql -h 127.0.0.1 -P 3307 -u admin -p < applications/app-service/src/main/resources/schema.sql
 ```
 
-También puedes conectarte manualmente para verificar o administrar la base de datos remota:
-
-```bash
-mysql -h 127.0.0.1 -P 3307 -u admin -p
-```
-
 ### Configuración de la aplicación
 
 La aplicación se conecta automáticamente usando las variables de entorno configuradas en `application.yaml`:
@@ -430,12 +367,6 @@ spring:
 # Ejecutar todos los tests
 ./gradlew test
 
-# Ejecutar tests con reporte
-./gradlew test jacocoTestReport
-
-# Ver reporte de cobertura
-open build/reports/jacoco/test/html/index.html
-```
 
 ## 📝 Notas Importantes
 
