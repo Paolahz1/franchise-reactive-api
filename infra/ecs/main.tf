@@ -246,11 +246,11 @@ resource "aws_ecs_task_definition" "main" {
       }
 
       healthCheck = {
-        command     = ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${var.container_port}/actuator/health || exit 1"]
+        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/actuator/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
-        startPeriod = 60
+        startPeriod = 120
       }
     }
   ])
@@ -294,7 +294,7 @@ resource "aws_ecs_service" "main" {
     rollback = true
   }
 
-  health_check_grace_period_seconds = 60
+  health_check_grace_period_seconds = 120
 
   depends_on = [
     aws_iam_role_policy_attachment.ecs_task_execution

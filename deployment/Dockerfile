@@ -27,8 +27,10 @@ LABEL version="1.0.0"
 
 VOLUME /tmp
 
-# Crear usuario no-root para seguridad (comandos para Ubuntu/Debian)
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+# Instalar curl para health checks y crear usuario no-root
+RUN apt-get update && apt-get install -y --no-install-recommends curl wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -r appgroup && useradd -r -g appgroup appuser
 
 WORKDIR /app
 
@@ -48,8 +50,8 @@ EXPOSE 8080
 USER appuser
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Entrypoint similar al scaffold de Bancolombia
 ENTRYPOINT ["/bin/sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

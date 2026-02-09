@@ -103,7 +103,7 @@ module "ecs" {
   ecr_repository_url = module.ecr.repository_url
   
   # Database
-  db_host     = module.rds.db_instance_endpoint
+  db_host     = module.rds.db_instance_address
   db_port     = 3306
   db_name     = var.db_name
   db_username = var.db_master_username
