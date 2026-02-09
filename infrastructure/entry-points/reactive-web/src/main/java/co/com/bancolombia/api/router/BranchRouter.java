@@ -36,39 +36,39 @@ public class BranchRouter {
                     method = RequestMethod.POST,
                     operation = @Operation(
                             operationId = "addBranchToFranchise",
-                            summary = "Agregar sucursal a franquicia",
-                            description = "Agrega una nueva sucursal a una franquicia existente",
+                            summary = "Add branch to franchise",
+                            description = "Adds a new branch to an existing franchise",
                             parameters = {
                                     @Parameter(
                                             name = "franchiseId", 
-                                            description = "ID de la franquicia", 
+                                            description = "Franchise ID", 
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     )
                             },
                             requestBody = @RequestBody(
-                                    description = "Datos de la nueva sucursal",
+                                    description = "New branch data",
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = BranchRequest.class))
                             ),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "201",
-                                            description = "Sucursal creada exitosamente",
+                                            description = "Branch created successfully",
                                             content = @Content(schema = @Schema(implementation = BranchResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Franquicia no encontrada o datos inválidos"
+                                            description = "Franchise not found or invalid data"
                                     ),
                                     @ApiResponse(
                                             responseCode = "409",
-                                            description = "Ya existe una sucursal con ese nombre en la franquicia"
+                                            description = "A branch with that name already exists in the franchise"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error interno del servidor"
+                                            description = "Internal server error"
                                     )
                             }
                     )
@@ -78,43 +78,43 @@ public class BranchRouter {
                     method = RequestMethod.PATCH,
                     operation = @Operation(
                             operationId = "updateBranchName",
-                            summary = "Actualizar nombre de sucursal",
-                            description = "Actualiza el nombre de una sucursal existente",
+                            summary = "Update branch name",
+                            description = "Updates the name of an existing branch",
                             parameters = {
                                     @Parameter(
                                             name = "branchId", 
-                                            description = "ID de la sucursal", 
+                                            description = "Branch ID", 
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     )
                             },
                             requestBody = @RequestBody(
-                                    description = "Nuevo nombre de la sucursal",
+                                    description = "New branch name",
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = UpdateNameRequest.class))
                             ),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
-                                            description = "Nombre actualizado exitosamente",
+                                            description = "Name updated successfully",
                                             content = @Content(schema = @Schema(implementation = BranchResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Nombre vacío o inválido"
+                                            description = "Empty or invalid name"
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
-                                            description = "Sucursal no encontrada"
+                                            description = "Branch not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "409",
-                                            description = "Ya existe una sucursal con ese nombre en la franquicia"
+                                            description = "A branch with that name already exists in the franchise"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error interno del servidor"
+                                            description = "Internal server error"
                                     )
                             }
                     )

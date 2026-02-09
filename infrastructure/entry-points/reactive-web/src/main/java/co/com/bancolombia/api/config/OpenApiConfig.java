@@ -30,7 +30,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title(applicationName + " API")
                         .version("1.0.0")
-                        .description("API REST reactiva para gestión de franquicias, sucursales y productos")
+                        .description("Reactive REST API for managing franchises, branches, and products")
                         .contact(new Contact()
                                 .name("Bancolombia")
                                 .email("support@bancolombia.com"))

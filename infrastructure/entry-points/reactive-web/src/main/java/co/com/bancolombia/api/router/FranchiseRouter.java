@@ -43,12 +43,12 @@ public class FranchiseRouter {
             beanMethod = "createFranchise",
             operation = @Operation(
                 operationId = "createFranchise",
-                summary = "Crear nueva franquicia",
-                description = "Crea una nueva franquicia en el sistema con el nombre proporcionado",
+                summary = "Create new franchise",
+                description = "Creates a new franchise in the system with the provided name",
                 tags = {"Franchises"},
                 requestBody = @RequestBody(
                     required = true,
-                    description = "Datos de la franquicia a crear",
+                    description = "Franchise data to create",
                     content = @Content(
                         mediaType = "application/json",
                         schema = @Schema(implementation = FranchiseRequest.class)
@@ -57,7 +57,7 @@ public class FranchiseRouter {
                 responses = {
                     @ApiResponse(
                         responseCode = "201",
-                        description = "Franquicia creada exitosamente",
+                        description = "Franchise created successfully",
                         content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = FranchiseResponse.class)
@@ -65,11 +65,11 @@ public class FranchiseRouter {
                     ),
                     @ApiResponse(
                         responseCode = "400",
-                        description = "Solicitud inválida - campos requeridos faltantes"
+                        description = "Invalid request - required fields missing"
                     ),
                     @ApiResponse(
                         responseCode = "409",
-                        description = "Conflicto - ya existe una franquicia con ese nombre"
+                        description = "Conflict - a franchise with that name already exists"
                     ),
                     @ApiResponse(
                         responseCode = "500",
@@ -85,8 +85,8 @@ public class FranchiseRouter {
             beanMethod = "getMaxStockProducts",
             operation = @Operation(
                 operationId = "getMaxStockProducts",
-                summary = "Obtener productos con mayor stock por sucursal",
-                description = "Devuelve una franquicia con todas sus sucursales y para cada sucursal el producto con mayor stock",
+                summary = "Get products with highest stock per branch",
+                description = "Returns a franchise with all its branches and for each branch the product with highest stock",
                 tags = {"Franchises"},
                 parameters = {
                     @Parameter(
@@ -100,7 +100,7 @@ public class FranchiseRouter {
                 responses = {
                     @ApiResponse(
                         responseCode = "200",
-                        description = "Franquicia con sus sucursales y productos top",
+                        description = "Franchise with its branches and top products",
                         content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = FranchiseWithMaxStockProductsResponse.class)
@@ -108,11 +108,11 @@ public class FranchiseRouter {
                     ),
                     @ApiResponse(
                         responseCode = "404",
-                        description = "Franquicia no encontrada"
+                        description = "Franchise not found"
                     ),
                     @ApiResponse(
                         responseCode = "500",
-                        description = "Error interno del servidor"
+                        description = "Internal server error"
                     )
                 }
             )
@@ -124,8 +124,8 @@ public class FranchiseRouter {
             beanMethod = "updateFranchiseName",
             operation = @Operation(
                 operationId = "updateFranchiseName",
-                summary = "Actualizar nombre de franquicia",
-                description = "Actualiza el nombre de una franquicia existente",
+                summary = "Update franchise name",
+                description = "Updates the name of an existing franchise",
                 tags = {"Franchises"},
                 parameters = {
                     @Parameter(
@@ -138,7 +138,7 @@ public class FranchiseRouter {
                 },
                 requestBody = @RequestBody(
                     required = true,
-                    description = "Nuevo nombre de la franquicia",
+                    description = "New franchise name",
                     content = @Content(
                         mediaType = "application/json",
                         schema = @Schema(implementation = UpdateNameRequest.class)
@@ -147,7 +147,7 @@ public class FranchiseRouter {
                 responses = {
                     @ApiResponse(
                         responseCode = "200",
-                        description = "Nombre actualizado exitosamente",
+                        description = "Name updated successfully",
                         content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = FranchiseResponse.class)
@@ -155,19 +155,19 @@ public class FranchiseRouter {
                     ),
                     @ApiResponse(
                         responseCode = "400",
-                        description = "Nombre vac\u00edo o inv\u00e1lido"
+                        description = "Empty or invalid name"
                     ),
                     @ApiResponse(
                         responseCode = "404",
-                        description = "Franquicia no encontrada"
+                        description = "Franchise not found"
                     ),
                     @ApiResponse(
                         responseCode = "409",
-                        description = "Ya existe una franquicia con ese nombre"
+                        description = "A franchise with that name already exists"
                     ),
                     @ApiResponse(
                         responseCode = "500",
-                        description = "Error interno del servidor"
+                        description = "Internal server error"
                     )
                 }
             )
