@@ -15,9 +15,13 @@ import java.util.List;
 public class OpenApiConfig {
 
     private final String applicationName;
+    private final String serverUrl;
 
-    public OpenApiConfig(@Value("${spring.application.name}") String applicationName) {
+    public OpenApiConfig(
+            @Value("${spring.application.name}") String applicationName,
+            @Value("${server.url:http://localhost:8080}") String serverUrl) {
         this.applicationName = applicationName;
+        this.serverUrl = serverUrl;
     }
 
     @Bean
@@ -26,7 +30,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title(applicationName + " API")
                         .version("1.0.0")
-                        .description("API REST to manage franchises")
+                        .description("API REST reactiva para gestión de franquicias, sucursales y productos")
                         .contact(new Contact()
                                 .name("Bancolombia")
                                 .email("support@bancolombia.com"))
@@ -35,11 +39,8 @@ public class OpenApiConfig {
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080")
-                                .description("Development Server"),
-                        new Server()
-                                .url("https://api.franchises.com")
-                                .description("Production Server")
+                                .url(serverUrl)
+                                .description("Current Environment Server")
                 ));
     }
 }

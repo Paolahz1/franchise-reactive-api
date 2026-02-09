@@ -88,6 +88,11 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "alb_dns_url" {
+  description = "ALB DNS URL for Swagger server configuration"
+  type        = string
+}
+
 # ============================================
 # ECS TASK VARIABLES
 # ============================================

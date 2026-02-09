@@ -109,6 +109,9 @@ module "ecs" {
   db_username = var.db_master_username
   db_password = var.db_master_password
   
+  # ALB
+  alb_dns_url = "http://${module.alb.alb_dns_name}"
+  
   # ECS Task Configuration
   task_cpu       = var.ecs_task_cpu
   task_memory    = var.ecs_task_memory
