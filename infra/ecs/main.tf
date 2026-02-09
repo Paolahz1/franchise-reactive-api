@@ -233,6 +233,10 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "SERVER_PORT"
           value = tostring(var.container_port)
+        },
+        {
+          name  = "SERVER_URL"
+          value = var.alb_dns_url
         }
       ]
 
