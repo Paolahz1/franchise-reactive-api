@@ -4,7 +4,7 @@ env        = "dev"
 
 # Database credentials
 db_master_username = "admin"
-db_master_password = "ChangeThisPassword123!"  # TODO: Use AWS Secrets Manager in production
+# db_master_password se pasa desde GitHub Secrets como TF_VAR_db_master_password
 
 # Database configuration for development
 db_skip_final_snapshot = true  # Skip snapshot on destroy in dev
