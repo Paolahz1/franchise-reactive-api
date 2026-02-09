@@ -1,8 +1,10 @@
 # Franchise Management System
 
-Sistema de gestión de franquicias construido con Clean Architecture, programación funcional reactiva y desplegado en AWS.
+Sistema de gestión de franquicias construido con el plugin [Scaffold Clean Architecture de Bancolombia](https://bancolombia.github.io/scaffold-clean-architecture/), programación funcional reactiva y desplegado en AWS.
 
-## 📋 Tabla de Contenidos
+El proyecto fue generado usando el plugin de Gradle `co.com.bancolombia.cleanArchitecture`, que proporciona una estructura base siguiendo los principios de Clean Architecture y Hexagonal Architectura.
+
+## Tabla de Contenidos
 
 - [Tecnologías](#tecnologías)
 - [Arquitectura](#arquitectura)
@@ -11,10 +13,12 @@ Sistema de gestión de franquicias construido con Clean Architecture, programaci
 - [Configuración Local](#configuración-local)
 - [Ejecución Local](#ejecución-local)
 - [API Endpoints](#api-endpoints)
+- [Docker](#docker)
 - [Infraestructura AWS](#infraestructura-aws)
 - [Base de Datos](#base-de-datos)
+- [Testing](#testing)
 
-## 🚀 Tecnologías
+## Tecnologías
 
 ### Backend
 - **Java 21** - Lenguaje de programación
@@ -26,9 +30,11 @@ Sistema de gestión de franquicias construido con Clean Architecture, programaci
 - **MapStruct** - Mapeo de objetos
 - **SpringDoc OpenAPI 2.7.0** - Documentación API (Swagger)
 
-### Build & Testing
+### Build & Scaffolding
 - **Gradle 8.x** - Sistema de construcción
+- **[Scaffold Clean Architecture Plugin](https://bancolombia.github.io/scaffold-clean-architecture/) 4.0.5** - Plugin de Bancolombia para generación de estructura Clean Architecture
 - **JUnit 5** - Testing
+- **Testcontainers** - Tests de integración con contenedores Docker
 
 ### Infrastructure
 - **Terraform** - Infrastructure as Code
@@ -41,16 +47,41 @@ Sistema de gestión de franquicias construido con Clean Architecture, programaci
 
 ### Principios Aplicados
 
-- ✅ **Clean Architecture** - Separación de responsabilidades
-- ✅ **Hexagonal Architecture** - Puertos y adaptadores
-- ✅ **Functional Reactive Programming** - Streams reactivos con Mono/Flux
-- ✅ **SOLID Principles** - Diseño orientado a objetos
-- ✅ **Lazy Evaluation** - Evaluación diferida con `Mono.defer()` y `Mono.fromSupplier()`
-- ✅ **Immutability** - Uso de `final` y Records
-- ✅ **Dependency Inversion** - Interfaces en el dominio
+-  **Clean Architecture** - Separación de responsabilidades
+-  **Hexagonal Architecture** - Puertos y adaptadores
+-  **Functional Reactive Programming** - Streams reactivos con Mono/Flux
+-  **SOLID Principles** - Diseño orientado a objetos
+-  **Lazy Evaluation** - Evaluación diferida con `Mono.defer()` y `Mono.fromSupplier()`
+-  **Dependency Inversion** - Interfaces en el dominio
+
+## Arquitectura
+
+### Diagrama de Infraestructura AWS
+
+![Arquitectura AWS](docs/architecture-aws.png)
+
+La aplicación está desplegada en AWS con los siguientes componentes:
+
+| Componente | Descripción |
+|------------|-------------|
+| **VPC** | Red privada virtual con subnets públicas y privadas en 2 AZs |
+| **RDS MySQL** | Base de datos en subnet privada (sin acceso público directo) |
+| **ECR** | Registro de contenedores Docker para las imágenes de la aplicación |
+| **NAT Gateway** | Permite salida a internet desde las subnets privadas |
+| **Bastion Host** | EC2 con Session Manager para acceso seguro a RDS (sin SSH keys) |
+| **S3 + DynamoDB** | Backend remoto para el state de Terraform |
 
 
-## 📦 Pre-requisitos
+### Módulos Gradle
+
+| Módulo | Tipo | Descripción |
+|--------|------|-------------|
+| `:model` | Domain | Entidades de dominio e interfaces de repositorio |
+| `:usecase` | Domain | Casos de uso (lógica de negocio) |
+| `:mysql` | Infrastructure | Implementación de repositorios con R2DBC MySQL |
+| `:reactive-web` | Infrastructure | Controladores REST con WebFlux |
+
+## Pre-requisitos
 
 ### Para desarrollo local
 
@@ -64,30 +95,36 @@ Sistema de gestión de franquicias construido con Clean Architecture, programaci
    ./gradlew --version
    ```
 
-3. **AWS CLI** (para conectarse a RDS)
+3. **MySQL Server** (base de datos local para desarrollo)
+   ```bash
+   brew install mysql
+   brew services start mysql
+   ```
+
+4. **MySQL Client** (opcional, para administrar la base de datos)
+   ```bash
+   brew install mysql-client
+   ```
+
+### Para gestión de infraestructura AWS
+
+5. **AWS CLI**
    ```bash
    brew install awscli
    aws configure
    ```
 
-4. **Session Manager Plugin** (para túnel a base de datos)
+6. **Session Manager Plugin** (para túnel SSM hacia RDS)
    ```bash
    brew install --cask session-manager-plugin
    ```
 
-5. **MySQL Client** (opcional, para conectarse manualmente)
-   ```bash
-   brew install mysql-client
-   ```
-
-### Para despliegue en AWS
-
-6. **Terraform**
+7. **Terraform**
    ```bash
    brew install terraform
    ```
 
-7. **Docker** (para construir imágenes)
+8. **Docker** (para construir imágenes)
    ```bash
    brew install --cask docker
    ```
@@ -101,61 +138,50 @@ git clone <repository-url>
 cd Service-franchise
 ```
 
-### 2. Configurar conexión a base de datos
+### 2. Configurar base de datos local
 
-La aplicación se conecta a **AWS RDS MySQL** a través de un túnel SSH via Session Manager.
+Para desarrollo local se usa **MySQL instalado en tu máquina**. Los defaults del `application.yaml` ya apuntan a `localhost:3306` con usuario `root`.
 
-**Opción A: Usar túnel automático (recomendado)**
-
-En una terminal separada, ejecuta:
+Crea la base de datos y carga el schema:
 
 ```bash
-cd infra
-./connect-mysql.sh
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS franchises_db"
+mysql -u root -p franchises_db < applications/app-service/src/main/resources/schema.sql
 ```
 
-Esto crea un túnel desde `localhost:3307` hacia RDS.
-
-**Opción B: Base de datos local (para desarrollo aislado)**
-
-Si prefieres usar MySQL local:
+Configura la contraseña de tu MySQL local como variable de entorno:
 
 ```bash
-# Iniciar MySQL local
-docker run -d \
-  --name mysql-franchise \
-  -e MYSQL_ROOT_PASSWORD=root \
-  -e MYSQL_DATABASE=franchises_db \
-  -p 3306:3306 \
-  mysql:8.0
-
-# Crear schema
-docker exec -i mysql-franchise mysql -uroot -proot franchises_db < applications/app-service/src/main/resources/schema.sql
+export DB_PASSWORD=TuPasswordLocal
 ```
 
-Luego modifica `applications/app-service/src/main/resources/application.yml`:
+### 3. Variables de entorno
 
-```yaml
-spring:
-  r2dbc:
-    url: r2dbc:mysql://localhost:3306/franchises_db
-    username: root
-    password: root
-```
-
-### 3. Variables de entorno (opcional)
-
-Puedes sobrescribir configuración con variables:
+La aplicación usa variables de entorno para las credenciales (nunca hardcodeadas).  
+Copia el archivo de ejemplo y llénalo con tus valores:
 
 ```bash
-export DB_HOST=localhost
-export DB_PORT=3307
-export DB_NAME=franchises_db
-export DB_USER=admin
-export DB_PASSWORD=ChangeThisPassword123!
+cp .env.example .env
+# Edita .env con tus credenciales
 ```
 
-## 🏃 Ejecución Local
+O expórtalas manualmente:
+
+```bash
+export DB_PASSWORD=TuPasswordLocal
+```
+
+Para desarrollo local solo es necesario configurar `DB_PASSWORD`, ya que los demás valores tienen defaults que apuntan a MySQL local:
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DB_HOST` | `localhost` | Host de MySQL |
+| `DB_PORT` | `3306` | Puerto de MySQL |
+| `DB_NAME` | `franchises_db` | Nombre de la base de datos |
+| `DB_USERNAME` | `root` | Usuario de MySQL |
+| `DB_PASSWORD` | *(vacío)* | Contraseña (requerida, nunca en código) |
+
+## Ejecución Local
 
 ### Compilar el proyecto
 
@@ -193,7 +219,7 @@ curl -X POST http://localhost:8080/api/franchises \
   -d '{"name": "Starbucks"}'
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Franchises
 
@@ -219,57 +245,16 @@ curl -X POST http://localhost:8080/api/franchises \
 | PATCH | `/api/products/{productId}/stock` | Actualizar stock de producto |
 | PATCH | `/api/products/{productId}/name` | Actualizar nombre de producto |
 
-### Ejemplos de uso
-
-**Crear franquicia:**
-```bash
-curl -X POST http://localhost:8080/api/franchises \
-  -H "Content-Type: application/json" \
-  -d '{"name": "McDonald'\''s"}'
-```
-
-**Agregar sucursal:**
-```bash
-curl -X POST http://localhost:8080/api/branches \
-  -H "Content-Type: application/json" \
-  -d '{
-    "franchiseId": 1,
-    "name": "Sucursal Centro"
-  }'
-```
-
-**Agregar producto:**
-```bash
-curl -X POST http://localhost:8080/api/products \
-  -H "Content-Type: application/json" \
-  -d '{
-    "branchId": 1,
-    "name": "Big Mac",
-    "stock": 50
-  }'
-```
-
-**Actualizar stock:**
-```bash
-curl -X PATCH http://localhost:8080/api/products/1/stock \
-  -H "Content-Type: application/json" \
-  -d '{"stock": 100}'
-```
-
-**Obtener productos con mayor stock:**
-```bash
-curl http://localhost:8080/api/franchises/1/max-stock-products
-```
 
 Documentación completa en: http://localhost:8080/webjars/swagger-ui/index.html
 
-## 🐳 Docker
+## Docker
 
 El proyecto está completamente dockerizado para facilitar el despliegue en cualquier entorno.
 
 ### Build local
 
-**Multi-stage build (recomendado):**
+**Multi-stage build:**
 ```bash
 cd deployment
 ./build-image.sh latest
@@ -291,9 +276,9 @@ docker build -f deployment/Dockerfile -t franchise-service:latest .
 **Opción 1: Solo la app (requiere MySQL externo)**
 ```bash
 docker run -p 8080:8080 \
-  -e SPRING_R2DBC_URL=r2dbc:mysql://host.docker.internal:3307/franchises_db \
-  -e SPRING_R2DBC_USERNAME=admin \
-  -e SPRING_R2DBC_PASSWORD=ChangeThisPassword123! \
+  -e SPRING_R2DBC_URL=r2dbc:mysql://host.docker.internal:3306/franchises_db \
+  -e SPRING_R2DBC_USERNAME=root \
+  -e SPRING_R2DBC_PASSWORD=$DB_PASSWORD \
   franchise-service:latest
 ```
 
@@ -338,17 +323,16 @@ aws ecr describe-images \
 
 ### Características del Dockerfile
 
-- ✅ **Multi-stage build** - Imagen final solo con JRE (más pequeña)
-- ✅ **Usuario no-root** - Seguridad mejorada
-- ✅ **Health check** integrado
-- ✅ **JVM optimizado para contenedores** (MaxRAMPercentage, G1GC)
-- ✅ **Alpine Linux** - Imagen base ligera
+-  **Multi-stage build** - Imagen final solo con JRE (más pequeña)
+-  **Usuario no-root** - Seguridad mejorada
+-  **Health check** integrado
+
 
 **Tamaño de imagen:**
 - Stage 1 (builder): ~800MB (con Gradle y JDK)
 - Stage 2 (final): ~200MB (solo JRE + app)
 
-## ☁️ Infraestructura AWS
+## Infraestructura AWS
 
 La infraestructura está completamente definida como código con Terraform.
 
@@ -385,7 +369,7 @@ terraform destroy
 
 **⚠️ ADVERTENCIA**: Esto eliminará todos los recursos y la base de datos.
 
-## 🗄️ Base de Datos
+## Base de Datos
 
 ### Schema
 
@@ -399,40 +383,48 @@ branches (id, name, franchise_id, created_at, updated_at)
 products (id, name, stock, branch_id, created_at, updated_at)
 ```
 
-### Conectarse a RDS MySQL
-
-**Desde terminal local:**
+### Inicializar schema en MySQL local (desarrollo)
 
 ```bash
-# Terminal 1: Iniciar túnel
-cd infra
-./connect-mysql.sh
-
-# Terminal 2: Conectarse con MySQL client
-mysql -h 127.0.0.1 -P 3307 -u admin -p
-# Password: ChangeThisPassword123!
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS franchises_db"
+mysql -u root -p franchises_db < applications/app-service/src/main/resources/schema.sql
 ```
 
-**Desde la aplicación:**
+### Inicializar schema en RDS (AWS remoto)
 
-La aplicación se conecta automáticamente usando la configuración en `application.yml`:
+Para crear el schema en la base de datos RDS en AWS, se usa un **túnel SSM** a través del Bastion Host. Esto permite conectarse a la base de datos privada sin exponer puertos públicos.
+
+```bash
+# Terminal 1: Iniciar túnel SSM hacia RDS
+cd infra
+./connect-mysql.sh
+# Esto crea un túnel desde localhost:3307 → RDS en la subnet privada
+
+# Terminal 2: Cargar el schema en RDS
+mysql -h 127.0.0.1 -P 3307 -u admin -p < applications/app-service/src/main/resources/schema.sql
+```
+
+También puedes conectarte manualmente para verificar o administrar la base de datos remota:
+
+```bash
+mysql -h 127.0.0.1 -P 3307 -u admin -p
+```
+
+### Configuración de la aplicación
+
+La aplicación se conecta automáticamente usando las variables de entorno configuradas en `application.yaml`:
 
 ```yaml
 spring:
   r2dbc:
-    url: r2dbc:mysql://localhost:3307/franchises_db
+    url: r2dbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:franchises_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
 ```
 
-### Inicializar schema
+> **Nota:** En desarrollo local la app usa los defaults (`localhost:3306`, `root`). En producción (AWS), las variables de entorno se configuran en el servicio desplegado para apuntar a RDS.
 
-El schema se crea automáticamente al ejecutar:
-
-```bash
-# Conectarse a MySQL (con túnel activo)
-mysql -h 127.0.0.1 -P 3307 -u admin -p < applications/app-service/src/main/resources/schema.sql
-```
-
-## 🧪 Testing
+## Testing
 
 ```bash
 # Ejecutar todos los tests
@@ -452,11 +444,11 @@ open build/reports/jacoco/test/html/index.html
 El proyecto usa programación reactiva con Reactor:
 
 ```java
-// ✅ Buena práctica: Lazy evaluation
+// Buena práctica: Lazy evaluation
 Mono.defer(() -> Mono.error(...))
 Mono.fromSupplier(() -> pathVariable)
 
-// ✅ Composición de operadores
+// Composición de operadores
 repository.findById(id)
     .switchIfEmpty(Mono.defer(() -> Mono.error(...)))
     .flatMap(entity -> repository.update(...))
@@ -468,11 +460,11 @@ repository.findById(id)
 Este proyecto usa **R2DBC** (reactivo), no JPA:
 
 ```java
-// ❌ NO usar anotaciones JPA
+// NO usar anotaciones JPA
 @Entity  // NO
 @Table   // NO
 
-// ✅ Usar anotaciones R2DBC
+//  Usar anotaciones R2DBC
 @Table("franchises")
 @Id
 private Long id;
@@ -487,18 +479,3 @@ R2DBC requiere `@Param` para mapeo correcto:
 Mono<Integer> updateName(@Param("id") Long id, @Param("name") String name);
 ```
 
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/amazing-feature`)
-3. Commit cambios (`git commit -m 'feat: add amazing feature'`)
-4. Push a la rama (`git push origin feature/amazing-feature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto es privado y confidencial.
-
----
-
-**Desarrollado con ☕ y Clean Architecture**

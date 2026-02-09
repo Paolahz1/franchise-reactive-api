@@ -1,7 +1,5 @@
 package co.com.bancolombia.mysql.adapter;
 
-import co.com.bancolombia.model.product.Product;
-import co.com.bancolombia.mysql.config.DatabaseConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,32 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.TestPropertySource;
+
+import co.com.bancolombia.model.product.Product;
+import co.com.bancolombia.mysql.config.DatabaseConfiguration;
 import reactor.test.StepVerifier;
 
-@Testcontainers
 @SpringBootTest(classes = {ProductMySQLAdapter.class, DatabaseConfiguration.class})
 @EnableAutoConfiguration
-@DisplayName("ProductMySQLAdapter - Integration Test")
+@TestPropertySource(properties = {
+        "spring.r2dbc.url=r2dbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:franchises_db}",
+        "spring.r2dbc.username=${DB_USERNAME:root}",
+        "spring.r2dbc.password=${DB_PASSWORD:}"
+})
+@DisplayName("ProductMySQLAdapter - Integration Test (Local MySQL)")
 class ProductMySQLAdapterIntegrationTest {
-
-    @Container
-    static MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test")
-            .withInitScript("schema.sql");
-
-    @DynamicPropertySource
-    static void configureDatabaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.r2dbc.url", () -> "r2dbc:mysql://" + mysqlContainer.getHost() + ":" + mysqlContainer.getMappedPort(3306) + "/testdb");
-        registry.add("spring.r2dbc.username", mysqlContainer::getUsername);
-        registry.add("spring.r2dbc.password", mysqlContainer::getPassword);
-    }
 
     @Autowired
     private ProductMySQLAdapter productAdapter;
@@ -52,7 +39,7 @@ class ProductMySQLAdapterIntegrationTest {
     @Test
     @DisplayName("Should save product successfully")
     void shouldSaveProductSuccessfully() {
-        // Given - Create franchise and branch first
+        // Given
         databaseClient
                 .sql("INSERT INTO franchises (name) VALUES (:name)")
                 .bind("name", "Franchise")
