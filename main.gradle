@@ -81,3 +81,27 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('wrapper') {
     gradleVersion = '9.2.1'
 }
+
+tasks.register('jacocoMergedReport', JacocoReport) {
+    dependsOn = [test, subprojects.jacocoTestReport]
+    additionalSourceDirs.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom files(subprojects.sourceSets.main.output)
+    executionData.setFrom project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+                '**/deployment/**',
+                '**/applications/**',
+                '**/config/**',
+                '**/exception/**',
+                '**/MainApplication.class',
+                '**/mapper/**',
+                '**/repository/**'
+        ])
+    }))
+    reports {
+        xml.setRequired true
+        csv.setRequired false
+        html.setRequired true
+    }
+}
