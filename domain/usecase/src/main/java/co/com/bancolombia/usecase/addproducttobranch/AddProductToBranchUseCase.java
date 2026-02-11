@@ -14,32 +14,17 @@ public class AddProductToBranchUseCase {
     private final ProductRepository productRepository;
     private final BranchRepository branchRepository;
 
-    public Mono<Product> execute(Long branchId, String productName, Integer stock) {
-        return Mono.justOrEmpty(productName)
-                .map(String::trim)
-                .filter(name -> !name.isEmpty())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_EMPTY))))
-                .flatMap(trimmedName -> 
-                    Mono.justOrEmpty(stock)
-                        .filter(s -> s >= 0)
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_STOCK_INVALID))))
-                        .flatMap(validStock -> 
-                            branchRepository.findById(branchId)
-                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NOT_FOUND))))
-                                .flatMap(branch -> 
-                                    productRepository.findByNameAndBranchId(trimmedName, branchId)
-                                        .flatMap(existing -> Mono.defer(() -> 
-                                            Mono.<Product>error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE))))
-                                        .switchIfEmpty(Mono.defer(() -> {
-                                            Product newProduct = Product.builder()
-                                                    .name(trimmedName)
-                                                    .stock(validStock)
-                                                    .branchId(branchId)
-                                                    .build();
-                                            return productRepository.save(newProduct);
-                                        }))
-                                )
-                        )
+    public Mono<Product> execute(Long branchId, Product product) {
+        return branchRepository.findById(branchId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NOT_FOUND))))
+                .flatMap(branch -> 
+                    productRepository.findByNameAndBranchId(product.getName(), branchId)
+                        .flatMap(existing -> 
+                            Mono.<Product>error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE)))
+                        .switchIfEmpty(Mono.defer(() -> {
+                            product.setBranchId(branchId);
+                            return productRepository.save(product);
+                        }))
                 );
     }
 }

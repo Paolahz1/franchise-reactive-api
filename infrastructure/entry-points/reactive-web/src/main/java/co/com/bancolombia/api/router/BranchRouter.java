@@ -1,8 +1,8 @@
 package co.com.bancolombia.api.router;
 
-import co.com.bancolombia.api.dto.BranchRequest;
-import co.com.bancolombia.api.dto.BranchResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
+import co.com.bancolombia.api.dto.request.BranchRequest;
+import co.com.bancolombia.api.dto.response.BranchResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
 import co.com.bancolombia.api.handler.BranchHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

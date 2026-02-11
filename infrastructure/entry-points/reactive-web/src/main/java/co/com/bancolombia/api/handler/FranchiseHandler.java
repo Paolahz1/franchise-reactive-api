@@ -1,13 +1,17 @@
 package co.com.bancolombia.api.handler;
 
-import co.com.bancolombia.api.dto.BranchWithTopProductResponse;
-import co.com.bancolombia.api.dto.FranchiseRequest;
-import co.com.bancolombia.api.dto.FranchiseResponse;
-import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
-import co.com.bancolombia.api.dto.TopProductResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
+import co.com.bancolombia.api.dto.response.BranchWithTopProductResponse;
+import co.com.bancolombia.api.dto.request.FranchiseRequest;
+import co.com.bancolombia.api.dto.response.FranchiseResponse;
+import co.com.bancolombia.api.dto.response.FranchiseWithMaxStockProductsResponse;
+import co.com.bancolombia.api.dto.response.TopProductResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
+import co.com.bancolombia.api.mapper.FranchiseRequestMapper;
+import co.com.bancolombia.api.mapper.FranchiseResponseMapper;
+import co.com.bancolombia.api.utils.LoggingUtils;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
+import co.com.bancolombia.model.franchise.Franchise;
 import co.com.bancolombia.usecase.createfranchise.CreateFranchiseUseCase;
 import co.com.bancolombia.usecase.getmaxstockproductsbyfranchise.GetMaxStockProductsByFranchiseUseCase;
 import co.com.bancolombia.usecase.updatefranchisename.UpdateFranchiseNameUseCase;
@@ -28,20 +32,24 @@ public class FranchiseHandler {
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final GetMaxStockProductsByFranchiseUseCase getMaxStockProductsByFranchiseUseCase;
     private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
+    private final FranchiseRequestMapper franchiseRequestMapper;
+    private final FranchiseResponseMapper franchiseResponseMapper;
+    private final LoggingUtils loggingUtils;
 
     public Mono<ServerResponse> createFranchise(ServerRequest request) {
+        loggingUtils.logRequest("CREATE_FRANCHISE", request);
         return request.bodyToMono(FranchiseRequest.class)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                .flatMap(franchiseRequest -> createFranchiseUseCase.execute(franchiseRequest.getName()))
-                .flatMap(franchise -> ServerResponse.status(HttpStatus.CREATED)
+                .map(franchiseRequestMapper::toDomain)
+                .flatMap(createFranchiseUseCase::execute)
+                .map(franchiseResponseMapper::toResponse)
+                .flatMap(response -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(FranchiseResponse.builder()
-                                .id(franchise.getId())
-                                .name(franchise.getName())
-                                .build()));
+                        .bodyValue(response));
     }
 
     public Mono<ServerResponse> getMaxStockProducts(ServerRequest request) {
+        loggingUtils.logRequest("GET_MAX_STOCK_PRODUCTS", request);
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
                     getMaxStockProductsByFranchiseUseCase.execute(franchiseId)
@@ -63,25 +71,29 @@ public class FranchiseHandler {
                                 )
                                 .build())
                 )
+                .doOnNext(response -> loggingUtils.logResponse("GET_MAX_STOCK_PRODUCTS", response, HttpStatus.OK.value()))
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(response));
+                        .bodyValue(response))
+                .doOnError(error -> loggingUtils.logError("GET_MAX_STOCK_PRODUCTS", error));
     }
 
     public Mono<ServerResponse> updateFranchiseName(ServerRequest request) {
+        loggingUtils.logRequest("UPDATE_FRANCHISE_NAME", request);
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
                     request.bodyToMono(UpdateNameRequest.class)
+                        .doOnNext(req -> loggingUtils.logRequest("UPDATE_FRANCHISE_NAME", request, req))
                         .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                         .flatMap(updateRequest ->
                             updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
                         )
                 )
-                .flatMap(franchise -> ServerResponse.ok()
+                .map(franchiseResponseMapper::toResponse)
+                .doOnNext(response -> loggingUtils.logResponse("UPDATE_FRANCHISE_NAME", response, HttpStatus.OK.value()))
+                .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(FranchiseResponse.builder()
-                                .id(franchise.getId())
-                                .name(franchise.getName())
-                                .build()));
+                        .bodyValue(response))
+                .doOnError(error -> loggingUtils.logError("UPDATE_FRANCHISE_NAME", error));
     }
 }

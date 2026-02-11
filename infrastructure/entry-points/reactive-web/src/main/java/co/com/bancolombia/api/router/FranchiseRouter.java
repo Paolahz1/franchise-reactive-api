@@ -1,9 +1,9 @@
 package co.com.bancolombia.api.router;
 
-import co.com.bancolombia.api.dto.FranchiseRequest;
-import co.com.bancolombia.api.dto.FranchiseResponse;
-import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
+import co.com.bancolombia.api.dto.request.FranchiseRequest;
+import co.com.bancolombia.api.dto.response.FranchiseResponse;
+import co.com.bancolombia.api.dto.response.FranchiseWithMaxStockProductsResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
 import co.com.bancolombia.api.handler.FranchiseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

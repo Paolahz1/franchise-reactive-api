@@ -32,6 +32,7 @@ public enum TechnicalMessage {
     // General validation errors
     INVALID_ID("400", "The provided identifier is invalid", ""),
     REQUIRED_FIELD_MISSING("400", "Required fields are missing in the request", ""),
+    VALIDATION_ERROR("400", "Validation error", ""),
 
     // Technical errors
     INTERNAL_ERROR("500", "An internal error occurred, please try again later", ""),

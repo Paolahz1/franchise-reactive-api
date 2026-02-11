@@ -14,25 +14,13 @@ public class AddBranchToFranchiseUseCase {
     private final BranchRepository branchRepository;
     private final FranchiseRepository franchiseRepository;
 
-    public Mono<Branch> execute(Long franchiseId, String branchName) {
-        return Mono.justOrEmpty(branchName)
-                .map(String::trim)
-                .filter(name -> !name.isEmpty())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NAME_EMPTY))))
-                .flatMap(trimmedName -> 
-                    franchiseRepository.findById(franchiseId)
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
-                        .flatMap(franchise -> 
-                            branchRepository.findByNameAndFranchiseId(trimmedName, franchiseId)
-                                .flatMap(existing -> Mono.defer(() -> 
-                                    Mono.<Branch>error(new BusinessException(TechnicalMessage.BRANCH_NAME_ALREADY_EXISTS))))
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    Branch newBranch = Branch.builder()
-                                            .name(trimmedName)
-                                            .franchiseId(franchiseId)
-                                            .build();
-                                    return branchRepository.save(newBranch);
-                                }))
+    public Mono<Branch> execute(Long franchiseId, Branch branch) {
+        return franchiseRepository.findById(franchiseId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
+                .flatMap(
+                        franchise -> branchRepository.findByNameAndFranchiseId(branch.getName(), franchiseId)
+                        .flatMap(existing ->
+                                Mono.error(new BusinessException(TechnicalMessage.BRANCH_NAME_ALREADY_EXISTS))
                         )
                 );
     }

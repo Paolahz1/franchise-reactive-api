@@ -22,7 +22,9 @@ public class GetMaxStockProductsByFranchiseUseCase {
 
     public Mono<FranchiseWithTopProducts> execute(Long franchiseId) {
         return franchiseRepository.findById(franchiseId)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
+                .switchIfEmpty(
+                        Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND)))
+                )
                 .flatMap(franchise ->
                     productRepository.findMaxStockByFranchise(franchiseId)
                         .flatMap(product ->

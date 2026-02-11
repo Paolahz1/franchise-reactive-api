@@ -1,4 +1,4 @@
-package co.com.bancolombia.api.dto;
+package co.com.bancolombia.api.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -12,12 +12,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Respuesta con los datos de una franquicia")
+@Schema(description = "Response with franchise data")
 public class FranchiseResponse {
-    
-    @Schema(description = "ID único de la franquicia", example = "1")
+
+    @Schema(description = "Unique franchise ID", example = "1")
     private Long id;
-    
-    @Schema(description = "Nombre de la franquicia", example = "Starbucks")
+
+    @Schema(description = "Franchise name", example = "Starbucks")
     private String name;
 }

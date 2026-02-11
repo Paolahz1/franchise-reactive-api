@@ -1,9 +1,9 @@
 package co.com.bancolombia.api.router;
 
-import co.com.bancolombia.api.dto.ProductRequest;
-import co.com.bancolombia.api.dto.ProductResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
-import co.com.bancolombia.api.dto.UpdateStockRequest;
+import co.com.bancolombia.api.dto.request.ProductRequest;
+import co.com.bancolombia.api.dto.response.ProductResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
+import co.com.bancolombia.api.dto.request.UpdateStockRequest;
 import co.com.bancolombia.api.handler.ProductHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

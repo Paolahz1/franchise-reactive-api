@@ -1,4 +1,4 @@
-package co.com.bancolombia.api.dto;
+package co.com.bancolombia.api.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -12,15 +12,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Sucursal con su producto de mayor stock")
+@Schema(description = "Branch with its highest stock product")
 public class BranchWithTopProductResponse {
 
-    @Schema(description = "ID de la sucursal", example = "1")
     private Long branchId;
 
-    @Schema(description = "Nombre de la sucursal", example = "Starbucks Centro")
     private String branchName;
 
-    @Schema(description = "Producto con mayor stock en esta sucursal")
+    @Schema(description = "Product with the highest stock in this branch")
     private TopProductResponse topProduct;
 }

@@ -1,9 +1,12 @@
 package co.com.bancolombia.api.handler;
 
-import co.com.bancolombia.api.dto.ProductRequest;
-import co.com.bancolombia.api.dto.ProductResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
-import co.com.bancolombia.api.dto.UpdateStockRequest;
+import co.com.bancolombia.api.dto.request.ProductRequest;
+import co.com.bancolombia.api.dto.response.ProductResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
+import co.com.bancolombia.api.dto.request.UpdateStockRequest;
+import co.com.bancolombia.api.mapper.ProductRequestMapper;
+import co.com.bancolombia.api.mapper.ProductResponseMapper;
+import co.com.bancolombia.api.utils.LoggingUtils;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.addproducttobranch.AddProductToBranchUseCase;
@@ -26,27 +29,29 @@ public class ProductHandler {
     private final RemoveProductFromBranchUseCase removeProductFromBranchUseCase;
     private final UpdateProductStockUseCase updateProductStockUseCase;
     private final UpdateProductNameUseCase updateProductNameUseCase;
+    private final ProductRequestMapper productRequestMapper;
+    private final ProductResponseMapper productResponseMapper;
+    private final LoggingUtils loggingUtils;
 
     public Mono<ServerResponse> addProductToBranch(ServerRequest request) {
+        loggingUtils.logRequest("ADD_PRODUCT_TO_BRANCH", request);
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
                 .flatMap(branchId -> 
                     request.bodyToMono(ProductRequest.class)
                         .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                        .flatMap(productRequest -> 
-                            addProductToBranchUseCase.execute(branchId, productRequest.getName(), productRequest.getStock())
+                        .map(productRequestMapper::toDomain)
+                        .flatMap(product -> 
+                            addProductToBranchUseCase.execute(branchId, product)
                         )
                 )
-                .flatMap(product -> ServerResponse.status(HttpStatus.CREATED)
+                .map(productResponseMapper::toResponse)
+                .flatMap(response -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ProductResponse.builder()
-                                .id(product.getId())
-                                .name(product.getName())
-                                .stock(product.getStock())
-                                .branchId(product.getBranchId())
-                                .build()));
+                        .bodyValue(response));
     }
 
     public Mono<ServerResponse> removeProductFromBranch(ServerRequest request) {
+        loggingUtils.logRequest("REMOVE_PRODUCT_FROM_BRANCH", request);
         return Mono.fromSupplier(() -> 
                     new Long[] {
                         Long.valueOf(request.pathVariable("branchId")),
@@ -55,45 +60,47 @@ public class ProductHandler {
                 )
                 .flatMap(ids -> 
                     removeProductFromBranchUseCase.execute(ids[0], ids[1])
+                        .doOnSuccess(v -> loggingUtils.logResponse("REMOVE_PRODUCT_FROM_BRANCH", HttpStatus.NO_CONTENT.value()))
                         .then(ServerResponse.noContent().build())
-                );
+                )
+                .doOnError(error -> loggingUtils.logError("REMOVE_PRODUCT_FROM_BRANCH", error));
     }
 
     public Mono<ServerResponse> updateProductStock(ServerRequest request) {
+        loggingUtils.logRequest("UPDATE_PRODUCT_STOCK", request);
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("productId")))
                 .flatMap(productId ->
                     request.bodyToMono(UpdateStockRequest.class)
+                        .doOnNext(req -> loggingUtils.logRequest("UPDATE_PRODUCT_STOCK", request, req))
                         .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                         .flatMap(stockRequest ->
                             updateProductStockUseCase.execute(productId, stockRequest.getStock())
                         )
                 )
-                .flatMap(product -> ServerResponse.ok()
+                .map(productResponseMapper::toResponse)
+                .doOnNext(response -> loggingUtils.logResponse("UPDATE_PRODUCT_STOCK", response, HttpStatus.OK.value()))
+                .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ProductResponse.builder()
-                                .id(product.getId())
-                                .name(product.getName())
-                                .stock(product.getStock())
-                                .branchId(product.getBranchId())
-                                .build()));
+                        .bodyValue(response))
+                .doOnError(error -> loggingUtils.logError("UPDATE_PRODUCT_STOCK", error));
     }
 
     public Mono<ServerResponse> updateProductName(ServerRequest request) {
+        loggingUtils.logRequest("UPDATE_PRODUCT_NAME", request);
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("productId")))
                 .flatMap(productId ->
                     request.bodyToMono(UpdateNameRequest.class)
+                        .doOnNext(req -> loggingUtils.logRequest("UPDATE_PRODUCT_NAME", request, req))
                         .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                         .flatMap(updateRequest ->
                             updateProductNameUseCase.execute(productId, updateRequest.getName())
                         )
                 )
-                .flatMap(product -> ServerResponse.ok()
+                .map(productResponseMapper::toResponse)
+                .doOnNext(response -> loggingUtils.logResponse("UPDATE_PRODUCT_NAME", response, HttpStatus.OK.value()))
+                .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ProductResponse.builder()
-                                .id(product.getId())
-                                .name(product.getName())
-                                .stock(product.getStock())
-                                .branchId(product.getBranchId())
-                                .build()));
+                        .bodyValue(response))
+                .doOnError(error -> loggingUtils.logError("UPDATE_PRODUCT_NAME", error));
     }
 }
