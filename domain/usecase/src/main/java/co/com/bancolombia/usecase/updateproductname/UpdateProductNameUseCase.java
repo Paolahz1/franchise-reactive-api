@@ -13,24 +13,19 @@ public class UpdateProductNameUseCase {
     private final ProductRepository productRepository;
 
     public Mono<Product> execute(Long productId, String newName) {
-        return Mono.just(newName)
-                .filter(name -> name != null && !name.trim().isEmpty())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_EMPTY))))
-                .flatMap(validName ->
-                    productRepository.findById(productId)
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NOT_FOUND))))
-                        .flatMap(product ->
-                            productRepository.findByNameAndBranchId(validName.trim(), product.getBranchId())
-                                .flatMap(existing ->
-                                    existing.getId().equals(productId)
-                                        ? productRepository.updateName(productId, validName.trim())
-                                            .then(productRepository.findById(productId))
-                                        : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE)))
-                                )
-                                .switchIfEmpty(
-                                    productRepository.updateName(productId, validName.trim())
-                                        .then(productRepository.findById(productId))
-                                )
+        return productRepository.findById(productId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NOT_FOUND))))
+                .flatMap(product ->
+                    productRepository.findByNameAndBranchId(newName.trim(), product.getBranchId())
+                        .flatMap(existing ->
+                            existing.getId().equals(productId)
+                                ? productRepository.updateName(productId, newName.trim())
+                                    .then(productRepository.findById(productId))
+                                : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE)))
+                        )
+                        .switchIfEmpty(
+                            productRepository.updateName(productId, newName.trim())
+                                .then(productRepository.findById(productId))
                         )
                 );
     }
