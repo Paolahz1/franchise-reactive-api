@@ -2,34 +2,34 @@
 # Variables de entrada del módulo ALB
 # ============================================
 
-variable "project"{}
+variable "project" {}
 
 variable "env" {}
 
 variable "vpc_id" {
-  description = "ID de la VPC donde se creará el ALB"
+  description = "ID of the VPC where the ALB will be created"
   type        = string
 }
 
 variable "public_subnet_ids" {
-  description = "IDs de las subnets públicas donde se desplegará el ALB"
+  description = "IDs of the public subnets where the ALB will be deployed"
   type        = list(string)
 }
 
 variable "container_port" {
-  description = "Puerto donde corre la aplicación en el contenedor"
+  description = "Port where the application runs inside the container"
   type        = number
   default     = 8080
 }
 
 variable "health_check_path" {
-  description = "Path del health check endpoint"
+  description = "Health check endpoint path"
   type        = string
   default     = "/actuator/health"
 }
 
 variable "enable_deletion_protection" {
-  description = "Protección contra eliminación accidental del ALB"
+  description = "Protection against accidental ALB deletion"
   type        = bool
   default     = false
 }

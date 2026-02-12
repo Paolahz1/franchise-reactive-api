@@ -3,11 +3,11 @@
 # ============================================
 
 variable "project" {
-  description = "Nombre del proyecto"
+  description = "Project name"
   type        = string
 }
 
 variable "env" {
-  description = "Ambiente (dev, staging, prod)"
+  description = "Environment (dev, staging, prod)"
   type        = string
 }

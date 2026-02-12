@@ -3,12 +3,12 @@
 # ============================================
 
 variable "project" {
-  description = "Nombre del proyecto"
+  description = "Project name"
   type        = string
 }
 
 variable "env" {
-  description = "Ambiente (dev, prod)"
+  description = "Enviroment (dev, prod)"
   type        = string
 }
 
@@ -19,7 +19,7 @@ variable "vpc_cidr" {
 }
 
 variable "availability_zones" {
-  description = "AZs para alta disponibilidad"
+  description = "Availability Zones for high availability"
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }

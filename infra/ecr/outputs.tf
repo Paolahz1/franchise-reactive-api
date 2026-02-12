@@ -1,23 +1,23 @@
 # ============================================
-# Outputs del módulo ECR
+# ECR module outputs
 # ============================================
 
 output "repository_url" {
-  description = "URL del repositorio ECR"
+  description = "ECR repository URL"
   value       = aws_ecr_repository.main.repository_url
 }
 
 output "repository_arn" {
-  description = "ARN del repositorio ECR"
+  description = "ECR repository ARN"
   value       = aws_ecr_repository.main.arn
 }
 
 output "repository_name" {
-  description = "Nombre del repositorio"
+  description = "Repository name"
   value       = aws_ecr_repository.main.name
 }
 
 output "registry_id" {
-  description = "ID del registro ECR"
+  description = "ECR registry ID"
   value       = aws_ecr_repository.main.registry_id
 }
