@@ -50,9 +50,8 @@ public class UseCasesConfig {
     @Bean
     public GetMaxStockProductsByFranchiseUseCase getMaxStockProductsByFranchiseUseCase(
             FranchiseRepository franchiseRepository,
-            BranchRepository branchRepository,
-            ProductRepository productRepository) {
-        return new GetMaxStockProductsByFranchiseUseCase(franchiseRepository, productRepository, branchRepository);
+            BranchRepository branchRepository) {
+        return new GetMaxStockProductsByFranchiseUseCase(franchiseRepository, branchRepository);
     }
 
     @Bean
