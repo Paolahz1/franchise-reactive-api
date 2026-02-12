@@ -1,5 +1,6 @@
 server:
   port: 8080
+
 spring:
   application:
     name: "ServiceFranchise"
@@ -10,15 +11,17 @@ spring:
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
     pool:
-      initial-size: 10
+      initial-size: 5
       max-size: 20
       max-idle-time: 30m
+      validation-query: SELECT 1
   h2:
     console:
       enabled: false
       path: "/h2"
   profiles:
     include: null
+
 management:
   endpoints:
     web:
@@ -28,8 +31,22 @@ management:
     health:
       probes:
         enabled: true
+
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
 aws:
   region: "us-east-1"
   secretName: "my-secret"
+
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    org.springframework.boot: WARN
+    org.springframework.data: WARN
+    org.springdoc: ERROR
+    io.netty: ERROR
+    io.r2dbc: INFO
+    org.testcontainers: WARN
+    co.com.bancolombia: INFO

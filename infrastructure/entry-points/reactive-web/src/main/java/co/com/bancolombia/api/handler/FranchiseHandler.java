@@ -1,25 +1,24 @@
 package co.com.bancolombia.api.handler;
 
-import co.com.bancolombia.api.dto.BranchWithTopProductResponse;
-import co.com.bancolombia.api.dto.FranchiseRequest;
-import co.com.bancolombia.api.dto.FranchiseResponse;
-import co.com.bancolombia.api.dto.FranchiseWithMaxStockProductsResponse;
-import co.com.bancolombia.api.dto.TopProductResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
+import co.com.bancolombia.api.dto.request.FranchiseRequest;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
+import co.com.bancolombia.api.mapper.FranchiseRequestMapper;
+import co.com.bancolombia.api.mapper.FranchiseResponseMapper;
+import co.com.bancolombia.api.mapper.FranchiseWithMaxStockProductsResponseMapper;
+import co.com.bancolombia.api.utils.LoggingUtils;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.createfranchise.CreateFranchiseUseCase;
 import co.com.bancolombia.usecase.getmaxstockproductsbyfranchise.GetMaxStockProductsByFranchiseUseCase;
 import co.com.bancolombia.usecase.updatefranchisename.UpdateFranchiseNameUseCase;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -28,60 +27,79 @@ public class FranchiseHandler {
     private final CreateFranchiseUseCase createFranchiseUseCase;
     private final GetMaxStockProductsByFranchiseUseCase getMaxStockProductsByFranchiseUseCase;
     private final UpdateFranchiseNameUseCase updateFranchiseNameUseCase;
+    private final FranchiseRequestMapper franchiseRequestMapper;
+    private final FranchiseResponseMapper franchiseResponseMapper;
+    private final FranchiseWithMaxStockProductsResponseMapper franchiseWithMaxStockProductsResponseMapper;
+    private final LoggingUtils loggingUtils;
 
-    public Mono<ServerResponse> createFranchise(ServerRequest request) {
+public Mono<ServerResponse> createFranchise(ServerRequest request) {
+
+        final String operation = "CREATE_FRANCHISE";
+        loggingUtils.logRequest(operation, request);
+
         return request.bodyToMono(FranchiseRequest.class)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                .flatMap(franchiseRequest -> createFranchiseUseCase.execute(franchiseRequest.getName()))
-                .flatMap(franchise -> ServerResponse.status(HttpStatus.CREATED)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(FranchiseResponse.builder()
-                                .id(franchise.getId())
-                                .name(franchise.getName())
-                                .build()));
+                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                .map(franchiseRequestMapper::toDomain)
+                .flatMap(createFranchiseUseCase::execute)
+                .map(franchiseResponseMapper::toResponse)
+                .flatMap(response ->
+                        ServerResponse.status(HttpStatus.CREATED)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(response)
+                )
+                .doOnSuccess(resp ->
+                        loggingUtils.logResponse(operation, HttpStatus.CREATED.value())
+                )
+                .doOnError(error ->
+                        loggingUtils.logError(operation, error)
+                );
     }
 
-    public Mono<ServerResponse> getMaxStockProducts(ServerRequest request) {
-        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
-                .flatMap(franchiseId ->
-                    getMaxStockProductsByFranchiseUseCase.execute(franchiseId)
-                        .map(result -> FranchiseWithMaxStockProductsResponse.builder()
-                                .franchiseId(result.getFranchise().getId())
-                                .franchiseName(result.getFranchise().getName())
-                                .branches(
-                                    result.getBranchesWithTopProducts().stream()
-                                        .map(branchWithProduct -> BranchWithTopProductResponse.builder()
-                                                .branchId(branchWithProduct.getBranch().getId())
-                                                .branchName(branchWithProduct.getBranch().getName())
-                                                .topProduct(TopProductResponse.builder()
-                                                        .productId(branchWithProduct.getTopProduct().getId())
-                                                        .productName(branchWithProduct.getTopProduct().getName())
-                                                        .stock(branchWithProduct.getTopProduct().getStock())
-                                                        .build())
-                                                .build())
-                                        .collect(Collectors.toList())
-                                )
-                                .build())
-                )
-                .flatMap(response -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(response));
-    }
+        public Mono<ServerResponse> getMaxStockProducts(ServerRequest request) {
+
+                final String operation = "GET_MAX_STOCK_PRODUCTS";
+                loggingUtils.logRequest(operation, request);
+
+                return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
+                        .flatMap(getMaxStockProductsByFranchiseUseCase::execute)
+                        .map(franchiseWithMaxStockProductsResponseMapper::toResponse)
+                        .flatMap(response ->
+                                ServerResponse.ok()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(response)
+                        )
+                        .doOnSuccess(resp ->
+                                loggingUtils.logResponse(operation, HttpStatus.OK.value())
+                        )
+                        .doOnError(error ->
+                                loggingUtils.logError(operation, error)
+                        );
+        }
 
     public Mono<ServerResponse> updateFranchiseName(ServerRequest request) {
+
+        final String operation = "UPDATE_FRANCHISE_NAME";
+        loggingUtils.logRequest(operation, request);
+
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
-                    request.bodyToMono(UpdateNameRequest.class)
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                        .flatMap(updateRequest ->
-                            updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
-                        )
+                        request.bodyToMono(UpdateNameRequest.class)
+                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .flatMap(updateRequest ->
+                                        updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
+                                )
                 )
-                .flatMap(franchise -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(FranchiseResponse.builder()
-                                .id(franchise.getId())
-                                .name(franchise.getName())
-                                .build()));
+                .map(franchiseResponseMapper::toResponse)
+                .flatMap(response ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(response)
+                )
+                .doOnSuccess(resp ->
+                        loggingUtils.logResponse(operation, HttpStatus.OK.value())
+                )
+                .doOnError(error ->
+                        loggingUtils.logError(operation, error)
+                );
     }
 }

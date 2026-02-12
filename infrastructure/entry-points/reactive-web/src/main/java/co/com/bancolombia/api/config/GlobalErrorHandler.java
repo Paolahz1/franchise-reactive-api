@@ -1,6 +1,6 @@
 package co.com.bancolombia.api.config;
 
-import co.com.bancolombia.api.dto.ErrorResponse;
+import co.com.bancolombia.api.dto.response.ErrorResponse;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +34,7 @@ public class GlobalErrorHandler implements WebExceptionHandler {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(ex.getCode())
                 .message(ex.getMessage())
+                .detail(ex.getDetail())
                 .build();
 
         return writeResponse(exchange, errorResponse, HttpStatus.BAD_REQUEST);

@@ -1,4 +1,4 @@
-package co.com.bancolombia.api.dto;
+package co.com.bancolombia.api.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -12,18 +12,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Response de un producto")
+@Schema(description = "Product response")
 public class ProductResponse {
 
-    @Schema(description = "ID único del producto", example = "1")
+    @Schema(description = "Unique product ID", example = "1")
     private Long id;
 
-    @Schema(description = "Nombre del producto", example = "Café Latte")
+    @Schema(description = "Product name", example = "Café Latte")
     private String name;
 
-    @Schema(description = "Stock disponible del producto", example = "100")
+    @Schema(description = "Available product stock", example = "100")
     private Integer stock;
 
-    @Schema(description = "ID de la sucursal a la que pertenece", example = "1")
+    @Schema(description = "ID of the branch it belongs to", example = "1")
     private Long branchId;
 }

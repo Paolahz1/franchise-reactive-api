@@ -52,7 +52,7 @@ class AddBranchToFranchiseUseCaseTest {
         when(branchRepository.save(any(Branch.class))).thenReturn(Mono.just(newBranch));
 
         // Then
-        StepVerifier.create(addBranchToFranchiseUseCase.execute(franchiseId, branchName))
+        StepVerifier.create(addBranchToFranchiseUseCase.execute(franchiseId, newBranch))
                 .expectNextMatches(branch ->
                         branch.getName().equals(branchName) &&
                         branch.getFranchiseId().equals(franchiseId)

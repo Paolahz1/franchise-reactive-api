@@ -34,7 +34,7 @@ class AddProductToBranchUseCaseTest {
     @Test
     @DisplayName("Should add product to branch successfully")
     void shouldAddProductToBranchSuccessfully() {
-        // Given
+        // Arrange
         Long branchId = 1L;
         String productName = "Product A";
         Integer stock = 100;
@@ -55,7 +55,7 @@ class AddProductToBranchUseCaseTest {
         when(productRepository.save(any(Product.class))).thenReturn(Mono.just(newProduct));
 
         // When & Then
-        StepVerifier.create(addProductToBranchUseCase.execute(branchId, productName, stock))
+        StepVerifier.create(addProductToBranchUseCase.execute(branchId,newProduct))
                 .expectNextMatches(product ->
                         product.getName().equals(productName) &&
                         product.getStock().equals(stock) &&

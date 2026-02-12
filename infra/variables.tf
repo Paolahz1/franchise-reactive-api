@@ -1,15 +1,15 @@
 variable "aws_region" {
-  description = "Región de AWS"
+  description = "AWS region"
   type        = string
 }
 
 variable "project" {
-  description = "Nombre del proyecto"
+  description = "Project name"
   type        = string
 }
 
 variable "env" {
-  description = "Ambiente (dev, prod)"
+  description = "Environment (dev, prod)"
   type        = string
 }
 
@@ -18,13 +18,13 @@ variable "env" {
 # ============================================
 
 variable "vpc_cidr" {
-  description = "CIDR block para la VPC"
+  description = "CIDR block for the VPC"
   type        = string
   default     = "10.0.0.0/16"
 }
 
 variable "availability_zones" {
-  description = "Zonas de disponibilidad para alta disponibilidad"
+  description = "Availability Zones for high availability"
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }
@@ -34,73 +34,73 @@ variable "availability_zones" {
 # ============================================
 
 variable "mysql_version" {
-  description = "Versión de MySQL"
+  description = "MySQL version"
   type        = string
   default     = "8.0.45"
 }
 
 variable "db_instance_class" {
-  description = "Clase de instancia RDS"
+  description = "RDS instance class"
   type        = string
   default     = "db.t3.micro"
 }
 
 variable "db_allocated_storage" {
-  description = "Almacenamiento inicial en GB"
+  description = "Initial storage in GB"
   type        = number
   default     = 20
 }
 
 variable "db_max_allocated_storage" {
-  description = "Almacenamiento máximo para autoscaling en GB"
+  description = "Maximum storage for autoscaling in GB"
   type        = number
   default     = 100
 }
 
 variable "db_name" {
-  description = "Nombre de la base de datos"
+  description = "Database name"
   type        = string
   default     = "franchises_db"
 }
 
 variable "db_master_username" {
-  description = "Usuario maestro de la base de datos"
+  description = "Database master username"
   type        = string
   sensitive   = true
 }
 
 variable "db_master_password" {
-  description = "Contraseña maestra de la base de datos"
+  description = "Database master password"
   type        = string
   sensitive   = true
 }
 
 variable "db_backup_retention_period" {
-  description = "Días de retención de backups"
+  description = "Backup retention period in days"
   type        = number
   default     = 7
 }
 
 variable "db_multi_az" {
-  description = "Habilitar despliegue Multi-AZ"
+  description = "Enable Multi-AZ deployment"
   type        = bool
   default     = false
 }
 
 variable "db_skip_final_snapshot" {
-  description = "Omitir snapshot final al eliminar"
+  description = "Skip final snapshot on deletion"
   type        = bool
   default     = false
 }
 
 variable "db_deletion_protection" {
-  description = "Habilitar protección contra eliminación"
+  description = "Enable deletion protection"
   type        = bool
   default     = true
 }
 
 variable "db_publicly_accessible" {
-  description = "Hacer la instancia RDS públicamente accesible"
+  description = "Make the RDS instance publicly accessible"
   type        = bool
   default     = false
 }
@@ -110,19 +110,19 @@ variable "db_publicly_accessible" {
 # ============================================
 
 variable "container_port" {
-  description = "Puerto donde corre la aplicación en el contenedor (Spring Boot)"
+  description = "Port where the application runs inside the container (Spring Boot)"
   type        = number
   default     = 8080
 }
 
 variable "health_check_path" {
-  description = "Path del health check endpoint"
+  description = "Health check endpoint path"
   type        = string
   default     = "/actuator/health"
 }
 
 variable "alb_deletion_protection" {
-  description = "Protección contra eliminación accidental del ALB"
+  description = "Protection against accidental ALB deletion"
   type        = bool
   default     = false
 }
@@ -132,55 +132,55 @@ variable "alb_deletion_protection" {
 # ============================================
 
 variable "ecs_task_cpu" {
-  description = "CPU units para ECS task (256, 512, 1024, 2048, 4096)"
+  description = "CPU units for ECS task (256, 512, 1024, 2048, 4096)"
   type        = string
   default     = "512"
 }
 
 variable "ecs_task_memory" {
-  description = "Memoria para ECS task en MB"
+  description = "Memory for ECS task in MB"
   type        = string
   default     = "1024"
 }
 
 variable "container_name" {
-  description = "Nombre del contenedor"
+  description = "Container name"
   type        = string
   default     = "franchise-api"
 }
 
 variable "ecs_desired_count" {
-  description = "Número deseado de tasks ECS"
+  description = "Desired number of ECS tasks"
   type        = number
   default     = 2
 }
 
 variable "ecs_min_capacity" {
-  description = "Mínimo número de tasks para auto-scaling"
+  description = "Minimum number of tasks for auto scaling"
   type        = number
   default     = 1
 }
 
 variable "ecs_max_capacity" {
-  description = "Máximo número de tasks para auto-scaling"
+  description = "Maximum number of tasks for auto scaling"
   type        = number
   default     = 4
 }
 
 variable "ecs_cpu_target" {
-  description = "Target de CPU para auto-scaling (%)"
+  description = "CPU target for auto scaling (%)"
   type        = number
   default     = 70
 }
 
 variable "ecs_memory_target" {
-  description = "Target de memoria para auto-scaling (%)"
+  description = "Memory target for auto scaling (%)"
   type        = number
   default     = 80
 }
 
 variable "ecs_log_retention_days" {
-  description = "Días de retención de logs en CloudWatch"
+  description = "Log retention period in CloudWatch (days)"
   type        = number
   default     = 7
 }

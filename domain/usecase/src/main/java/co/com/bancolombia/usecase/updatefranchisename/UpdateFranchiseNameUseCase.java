@@ -13,25 +13,22 @@ public class UpdateFranchiseNameUseCase {
     private final FranchiseRepository franchiseRepository;
 
     public Mono<Franchise> execute(Long franchiseId, String newName) {
-        return Mono.just(newName)
-                .filter(name -> name != null && !name.trim().isEmpty())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NAME_EMPTY))))
-                .flatMap(validName ->
-                    franchiseRepository.findById(franchiseId)
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
-                        .flatMap(franchise ->
-                            franchiseRepository.findByName(validName.trim())
-                                .flatMap(existing ->
-                                    existing.getId().equals(franchiseId)
-                                        ? franchiseRepository.updateName(franchiseId, validName.trim())
-                                            .then(franchiseRepository.findById(franchiseId))
-                                        : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NAME_DUPLICATE)))
-                                )
-                                .switchIfEmpty(
-                                    franchiseRepository.updateName(franchiseId, validName.trim())
-                                        .then(franchiseRepository.findById(franchiseId))
-                                )
-                        )
+        return franchiseRepository.findById(franchiseId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
+                .flatMap(franchise ->
+                    franchiseRepository.findByName(newName.trim())
+                        .flatMap(existing -> {
+                            if (existing.getId().equals(franchiseId)) {
+                                return franchiseRepository.updateName(franchiseId, newName.trim())
+                                        .then(Mono.just(franchise));
+                            } else {
+                                return Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NAME_DUPLICATE));
+                            }
+                        })
+                        .switchIfEmpty(Mono.defer(() ->
+                            franchiseRepository.updateName(franchiseId, newName.trim())
+                                .then(Mono.just(franchise))
+                        ))
                 );
     }
 }

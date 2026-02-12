@@ -1,11 +1,15 @@
 package co.com.bancolombia.mysql.adapter;
 
+import org.springframework.stereotype.Component;
+
 import co.com.bancolombia.model.branch.Branch;
+import co.com.bancolombia.model.branch.BranchWithTopProduct;
 import co.com.bancolombia.model.branch.gateways.BranchRepository;
 import co.com.bancolombia.mysql.mapper.BranchMapper;
+import co.com.bancolombia.mysql.mapper.BranchWithProductMapper;
 import co.com.bancolombia.mysql.repository.BranchR2dbcRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -14,6 +18,7 @@ public class BranchMySQLAdapter implements BranchRepository {
 
     private final BranchR2dbcRepository r2dbcRepository;
     private final BranchMapper branchMapper;
+    private final BranchWithProductMapper branchWithProductMapper;
 
     @Override
     public Mono<Branch> save(Branch branch) {
@@ -38,5 +43,11 @@ public class BranchMySQLAdapter implements BranchRepository {
     public Mono<Void> updateName(Long branchId, String newName) {
         return r2dbcRepository.updateName(branchId, newName)
             .then();
+    }
+
+    @Override
+    public Flux<BranchWithTopProduct> findBranchesWithTopProductByFranchiseId(Long franchiseId) {
+        return r2dbcRepository.findBranchesWithTopProductByFranchiseId(franchiseId)
+                .map(branchWithProductMapper::toDomain);
     }
 }

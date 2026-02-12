@@ -1,4 +1,4 @@
-package co.com.bancolombia.api.dto;
+package co.com.bancolombia.api.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,4 +14,5 @@ import lombok.Setter;
 public class ErrorResponse {
     private String code;
     private String message;
+    private String detail;
 }

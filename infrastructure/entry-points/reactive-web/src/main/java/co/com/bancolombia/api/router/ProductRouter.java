@@ -1,9 +1,9 @@
 package co.com.bancolombia.api.router;
 
-import co.com.bancolombia.api.dto.ProductRequest;
-import co.com.bancolombia.api.dto.ProductResponse;
-import co.com.bancolombia.api.dto.UpdateNameRequest;
-import co.com.bancolombia.api.dto.UpdateStockRequest;
+import co.com.bancolombia.api.dto.request.ProductRequest;
+import co.com.bancolombia.api.dto.response.ProductResponse;
+import co.com.bancolombia.api.dto.request.UpdateNameRequest;
+import co.com.bancolombia.api.dto.request.UpdateStockRequest;
 import co.com.bancolombia.api.handler.ProductHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,43 +39,43 @@ public class ProductRouter {
                     method = RequestMethod.POST,
                     operation = @Operation(
                             operationId = "addProductToBranch",
-                            summary = "Agregar producto a sucursal",
-                            description = "Agrega un nuevo producto a una sucursal específica con stock inicial",
+                            summary = "Add product to branch",
+                            description = "Adds a new product to a specific branch with initial stock",
                             parameters = {
                                     @Parameter(
                                             name = "branchId", 
-                                            description = "ID de la sucursal", 
+                                            description = "Branch ID", 
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     )
                             },
                             requestBody = @RequestBody(
-                                    description = "Datos del nuevo producto",
+                                    description = "New product data",
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = ProductRequest.class))
                             ),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "201",
-                                            description = "Producto agregado exitosamente",
+                                            description = "Product added successfully",
                                             content = @Content(schema = @Schema(implementation = ProductResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Datos inválidos o sucursal no encontrada"
+                                            description = "Invalid data or branch not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
-                                            description = "Sucursal no encontrada"
+                                            description = "Branch not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "409",
-                                            description = "Ya existe un producto con ese nombre en la sucursal"
+                                            description = "A product with that name already exists in the branch"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error interno del servidor"
+                                            description = "Internal server error"
                                     )
                             }
                     )
@@ -85,19 +85,19 @@ public class ProductRouter {
                     method = RequestMethod.DELETE,
                     operation = @Operation(
                             operationId = "removeProductFromBranch",
-                            summary = "Eliminar producto de sucursal",
-                            description = "Elimina un producto específico de una sucursal",
+                            summary = "Remove product from branch",
+                            description = "Removes a specific product from a branch",
                             parameters = {
                                     @Parameter(
                                             name = "branchId", 
-                                            description = "ID de la sucursal", 
+                                            description = "Branch ID", 
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     ),
                                     @Parameter(
                                             name = "productId", 
-                                            description = "ID del producto a eliminar", 
+                                            description = "Product ID to remove", 
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
@@ -106,15 +106,15 @@ public class ProductRouter {
                             responses = {
                                     @ApiResponse(
                                             responseCode = "204",
-                                            description = "Producto eliminado exitosamente"
+                                            description = "Product removed successfully"
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
-                                            description = "Sucursal o producto no encontrado"
+                                            description = "Branch or product not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error al eliminar el producto - el producto no pertenece a esta sucursal"
+                                            description = "Error removing product - product does not belong to this branch"
                                     )
                             }
                     )
@@ -124,39 +124,39 @@ public class ProductRouter {
                     method = RequestMethod.PATCH,
                     operation = @Operation(
                             operationId = "updateProductStock",
-                            summary = "Actualizar stock de producto",
-                            description = "Modifica la cantidad en stock de un producto específico",
+                            summary = "Update product stock",
+                            description = "Modifies the stock quantity of a specific product",
                             parameters = {
                                     @Parameter(
                                             name = "productId",
-                                            description = "ID del producto a actualizar",
+                                            description = "Product ID to update",
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     )
                             },
                             requestBody = @RequestBody(
-                                    description = "Nuevo stock del producto",
+                                    description = "New product stock",
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = UpdateStockRequest.class))
                             ),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
-                                            description = "Stock actualizado exitosamente",
+                                            description = "Stock updated successfully",
                                             content = @Content(schema = @Schema(implementation = ProductResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Stock inválido (debe ser mayor o igual a 0)"
+                                            description = "Invalid stock (must be greater than or equal to 0)"
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
-                                            description = "Producto no encontrado"
+                                            description = "Product not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error interno del servidor"
+                                            description = "Internal server error"
                                     )
                             }
                     )
@@ -166,43 +166,43 @@ public class ProductRouter {
                     method = RequestMethod.PATCH,
                     operation = @Operation(
                             operationId = "updateProductName",
-                            summary = "Actualizar nombre de producto",
-                            description = "Actualiza el nombre de un producto existente",
+                            summary = "Update product name",
+                            description = "Updates the name of an existing product",
                             parameters = {
                                     @Parameter(
                                             name = "productId",
-                                            description = "ID del producto a actualizar",
+                                            description = "Product ID to update",
                                             required = true,
                                             in = ParameterIn.PATH,
                                             schema = @Schema(type = "integer", format = "int64", example = "1")
                                     )
                             },
                             requestBody = @RequestBody(
-                                    description = "Nuevo nombre del producto",
+                                    description = "New product name",
                                     required = true,
                                     content = @Content(schema = @Schema(implementation = UpdateNameRequest.class))
                             ),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "200",
-                                            description = "Nombre actualizado exitosamente",
+                                            description = "Name updated successfully",
                                             content = @Content(schema = @Schema(implementation = ProductResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "400",
-                                            description = "Nombre vacío o inválido"
+                                            description = "Empty or invalid name"
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
-                                            description = "Producto no encontrado"
+                                            description = "Product not found"
                                     ),
                                     @ApiResponse(
                                             responseCode = "409",
-                                            description = "Ya existe un producto con ese nombre en la sucursal"
+                                            description = "A product with that name already exists in the branch"
                                     ),
                                     @ApiResponse(
                                             responseCode = "500",
-                                            description = "Error interno del servidor"
+                                            description = "Internal server error"
                                     )
                             }
                     )
