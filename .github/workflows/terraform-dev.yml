@@ -92,12 +92,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ needs.infrastructure.outputs.ecr_repo_name }}
           IMAGE_TAG: ${{ github.sha }}
-        run: | # Contruye imagen docker y luego crea 2 tags: una con el SHA del commit y otra con "latest"
-          docker build \
-            -f deployment/Dockerfile \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-            .
+        run: docker build -f deployment/Dockerfile -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" .
+
 
       - name: Push Docker image to ECR
         env:
