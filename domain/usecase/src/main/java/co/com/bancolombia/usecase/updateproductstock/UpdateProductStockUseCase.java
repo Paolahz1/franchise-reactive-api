@@ -17,7 +17,7 @@ public class UpdateProductStockUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NOT_FOUND))))
                 .flatMap(product ->
                     productRepository.updateStock(productId, newStock)
-                        .then(productRepository.findById(productId))
+                        .then(Mono.just(product.toBuilder().stock(newStock).build()))
                 );
     }
 }
