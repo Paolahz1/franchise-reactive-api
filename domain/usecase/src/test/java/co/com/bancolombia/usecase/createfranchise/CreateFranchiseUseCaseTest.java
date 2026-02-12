@@ -34,22 +34,19 @@ class CreateFranchiseUseCaseTest {
     void shouldCreateFranchiseSuccessfully_WhenNameIsValidAndDoesNotExist() {
        
         
-        String franchiseName = "Starbucks";
+        Franchise franchise = Franchise.builder().name("Starbucks").build();
         
         Franchise expectedFranchise = Franchise.builder()
                 .id(1L)
-                .name(franchiseName)
+                .name("Starbucks")
                 .build();
 
 
-        when(franchiseRepository.findByName(anyString()))
-                .thenReturn(Mono.empty());
+        when(franchiseRepository.findByName(anyString())).thenReturn(Mono.empty());
         
-        when(franchiseRepository.save(any(Franchise.class)))
-                .thenReturn(Mono.just(expectedFranchise));
+        when(franchiseRepository.save(any(Franchise.class))).thenReturn(Mono.just(expectedFranchise));
 
-        
-        Mono<Franchise> result = createFranchiseUseCase.execute(franchiseName);
+        Mono<Franchise> result = createFranchiseUseCase.execute(franchise);
 
         /**
          * StepVerifier - Herramienta de Reactor Test
@@ -74,96 +71,26 @@ class CreateFranchiseUseCaseTest {
                 // Ejecuta las verificaciones
                 .verify();
 
-        // ====================================================================
-        // VERIFY (Verificar interacciones) - Comprobar llamadas a mocks
-        // ====================================================================
-        
-        /**
-         * verify(mock).metodo(argumentos)
-         * 
-         * "Verifica que el mock fue llamado con estos argumentos"
-         * 
-         * ¿Por qué verificar interacciones?
-         * - Asegura que el código ejecutó la lógica esperada
-         * - Detecta si se olvidó llamar a un método importante
-         * - Verifica el orden y cantidad de llamadas
-         * 
-         * Variantes:
-         * - verify(mock): Verifica que se llamó 1 vez (default)
-         * - verify(mock, times(2)): Verifica que se llamó 2 veces
-         * - verify(mock, never()): Verifica que NUNCA se llamó
-         * - verify(mock, atLeastOnce()): Al menos 1 vez
-         */
 
         // Verificar que se consultó si la franquicia existe
         verify(franchiseRepository, times(1))
-                .findByName(franchiseName);
+                .findByName(franchise.getName());
 
         // Verificar que se guardó una franquicia
         verify(franchiseRepository, times(1))
                 .save(any(Franchise.class));
 
-        /**
-         * Mejora alternativa - Verificar el contenido exacto del objeto guardado:
-         * 
-         * verify(franchiseRepository).save(argThat(franchise ->
-         *     franchise.getName().equals("Starbucks")
-         * ));
-         * 
-         * argThat(): Permite validar propiedades del argumento
-         */
 
         // Verificar que NO se llamaron otros métodos no esperados
         verifyNoMoreInteractions(franchiseRepository);
-        
-        /**
-         * verifyNoMoreInteractions(mock)
-         * - Asegura que no hubo llamadas adicionales inesperadas
-         * - Útil para detectar efectos secundarios no deseados
-         * - OPCIONAL: Algunos lo consideran demasiado estricto
-         */
+
+
     }
 
     // ========================================================================
     // PLANTILLA PARA OTROS TESTS (por implementar)
     // ========================================================================
-    
-    /**
-     * OTROS CASOS DE PRUEBA RECOMENDADOS:
-     * (Implementa estos siguiendo el patrón del test anterior)
-     * 
-     * 1. shouldThrowException_WhenNameIsEmpty()
-     *    - Input: "" o "   "
-     *    - Mock: No se llama al repositorio
-     *    - Expected: BusinessException con FRANCHISE_NAME_EMPTY
-     *    - Usar: .expectError(BusinessException.class)
-     * 
-     * 2. shouldThrowException_WhenNameIsNull()
-     *    - Input: null
-     *    - Expected: BusinessException con FRANCHISE_NAME_EMPTY
-     * 
-     * 3. shouldThrowException_WhenFranchiseAlreadyExists()
-     *    - Input: "Starbucks"
-     *    - Mock findByName: Retorna Mono.just(existing)
-     *    - Mock save: NO se llama (usar verify(never()))
-     *    - Expected: BusinessException con FRANCHISE_NAME_ALREADY_EXISTS
-     * 
-     * 4. shouldTrimNameBeforeSaving()
-     *    - Input: "  Starbucks  "
-     *    - Expected: Se guarda "Starbucks" (sin espacios)
-     *    - Usar argThat() para verificar el nombre trimmed
-     * 
-     * PATRÓN GENERAL:
-     * - Arrange: Preparar datos y configurar mocks
-     * - Act: Ejecutar el método
-     * - Assert: Verificar resultado con StepVerifier
-     * - Verify: Verificar interacciones con verify()
-     */
 
-    // ========================================================================
-    // NOTAS FINALES - Mejores prácticas
-    // ========================================================================
-    
     /**
      * MEJORES PRÁCTICAS DE TESTING:
      * 
