@@ -174,17 +174,13 @@ Para desarrollo local solo es necesario configurar `DB_PASSWORD`, ya que los dem
 
 ### Ejecutar la aplicación
 
-**Opción 1: Con Gradle**
+**Con Gradle**
 
 ```bash
 ./gradlew :app-service:bootRun
 ```
 
-**Opción 2: Con JAR**
 
-```bash
-java -jar applications/app-service/build/libs/app-service.jar
-```
 
 La aplicación estará disponible en:
 - **API**: http://localhost:8080
@@ -367,24 +363,6 @@ spring:
 # Ejecutar todos los tests
 ./gradlew test
 
-
-## 📝 Notas Importantes
-
-### Programación Funcional Reactiva
-
-El proyecto usa programación reactiva con Reactor:
-
-```java
-// Buena práctica: Lazy evaluation
-Mono.defer(() -> Mono.error(...))
-Mono.fromSupplier(() -> pathVariable)
-
-// Composición de operadores
-repository.findById(id)
-    .switchIfEmpty(Mono.defer(() -> Mono.error(...)))
-    .flatMap(entity -> repository.update(...))
-    .then(repository.findById(id))
-```
 
 ### R2DBC vs JPA
 
