@@ -1,7 +1,12 @@
 package co.com.bancolombia.api.handler;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
 import co.com.bancolombia.api.dto.request.BranchRequest;
-import co.com.bancolombia.api.dto.response.BranchResponse;
 import co.com.bancolombia.api.dto.request.UpdateNameRequest;
 import co.com.bancolombia.api.mapper.BranchRequestMapper;
 import co.com.bancolombia.api.mapper.BranchResponseMapper;
@@ -12,11 +17,6 @@ import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.addbranchtofranchise.AddBranchToFranchiseUseCase;
 import co.com.bancolombia.usecase.updatebranchname.UpdateBranchNameUseCase;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -31,40 +31,57 @@ public class BranchHandler {
     private final LoggingUtils loggingUtils;
 
     public Mono<ServerResponse> addBranchToFranchise(ServerRequest request) {
-        loggingUtils.logRequest("ADD_BRANCH_TO_FRANCHISE", request);
-        return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
+        final String operation = "ADD_BRANCH_TO_FRANCHISE";
+        loggingUtils.logRequest(operation, request);
+
+           return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
-                    request.bodyToMono(BranchRequest.class)
-                        .switchIfEmpty(Mono.defer(
-                                () -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
-                        )
-                        .flatMap(validationUtils::validate)
-                        .map(branchRequestMapper::toDomain)
-                        .flatMap(branch -> addBranchToFranchiseUseCase.execute(franchiseId, branch))
+                        request.bodyToMono(BranchRequest.class)
+                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .flatMap(validationUtils::validate)
+                                .map(branchRequestMapper::toDomain)
+                                .flatMap(branch -> addBranchToFranchiseUseCase.execute(franchiseId, branch))
                 )
                 .map(branchResponseMapper::toResponse)
-                .flatMap(response -> ServerResponse.status(HttpStatus.CREATED)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(response));
+                .flatMap(response ->
+                        ServerResponse.status(HttpStatus.CREATED)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(response)
+                )
+                .doOnSuccess(response ->
+                        loggingUtils.logResponse(operation, HttpStatus.CREATED.value())
+                )
+                .doOnError(error ->
+                        loggingUtils.logError(operation, error)
+                );
+
     }
 
     public Mono<ServerResponse> updateBranchName(ServerRequest request) {
-        loggingUtils.logRequest("UPDATE_BRANCH_NAME", request);
+
+        final String operation = "UPDATE_BRANCH_NAME";
+        loggingUtils.logRequest(operation, request);
+
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
                 .flatMap(branchId ->
-                    request.bodyToMono(UpdateNameRequest.class)
-                        .doOnNext(req -> loggingUtils.logRequest("UPDATE_BRANCH_NAME", request, req))
-                        .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
-                        .flatMap(validationUtils::validate)
-                        .flatMap(updateRequest ->
-                            updateBranchNameUseCase.execute(branchId, updateRequest.getName())
-                        )
+                        request.bodyToMono(UpdateNameRequest.class)
+                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .flatMap(validationUtils::validate)
+                                .flatMap(updateRequest ->
+                                        updateBranchNameUseCase.execute(branchId, updateRequest.getName())
+                                )
                 )
                 .map(branchResponseMapper::toResponse)
-                .doOnNext(response -> loggingUtils.logResponse("UPDATE_BRANCH_NAME", response, HttpStatus.OK.value()))
-                .flatMap(response -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(response))
-                .doOnError(error -> loggingUtils.logError("UPDATE_BRANCH_NAME", error));
+                .flatMap(response ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(response)
+                )
+                .doOnSuccess(response ->
+                        loggingUtils.logResponse(operation, HttpStatus.OK.value())
+                )
+                .doOnError(error ->
+                        loggingUtils.logError(operation, error)
+                );
     }
 }
