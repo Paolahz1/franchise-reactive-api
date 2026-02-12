@@ -177,7 +177,7 @@ Para desarrollo local solo es necesario configurar `DB_PASSWORD`, ya que los dem
 **Opción 1: Con Gradle**
 
 ```bash
-./gradlew :applications:app-service:bootRun
+./gradlew :app-service:bootRun
 ```
 
 **Opción 2: Con JAR**
