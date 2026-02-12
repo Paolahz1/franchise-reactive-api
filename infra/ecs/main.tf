@@ -3,7 +3,7 @@
 # ============================================
 
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.environment}"
+  name = "${var.project}-${var.environment}"
 
   setting {
     name  = "containerInsights"
@@ -13,7 +13,7 @@ resource "aws_ecs_cluster" "main" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_name}-cluster-${var.environment}"
+      Name = "${var.project}-cluster-${var.environment}"
     }
   )
 }
@@ -35,13 +35,13 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 # ============================================
 
 resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}-${var.environment}"
+  name              = "/ecs/${var.project}-${var.environment}"
   retention_in_days = var.log_retention_days
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_name}-logs-${var.environment}"
+      Name = "${var.project}-logs-${var.environment}"
     }
   )
 }
@@ -52,7 +52,7 @@ resource "aws_cloudwatch_log_group" "ecs" {
 
 # ECS Task Execution Role (pull images from ECR, write logs)
 resource "aws_iam_role" "ecs_task_execution" {
-  name = "${var.project_name}-ecs-task-execution-${var.environment}"
+  name = "${var.project}-ecs-task-execution-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -107,7 +107,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_ecr" {
 
 # ECS Task Role (permissions for the running application)
 resource "aws_iam_role" "ecs_task" {
-  name = "${var.project_name}-ecs-task-${var.environment}"
+  name = "${var.project}-ecs-task-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -150,7 +150,7 @@ resource "aws_iam_role_policy" "ecs_task" {
 # ============================================
 
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-ecs-tasks-${var.environment}"
+  name        = "${var.project}-ecs-tasks-${var.environment}"
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
 
@@ -173,7 +173,7 @@ resource "aws_security_group" "ecs_tasks" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_name}-ecs-tasks-sg-${var.environment}"
+      Name = "${var.project}-ecs-tasks-sg-${var.environment}"
     }
   )
 }
@@ -183,7 +183,7 @@ resource "aws_security_group" "ecs_tasks" {
 # ============================================
 
 resource "aws_ecs_task_definition" "main" {
-  family                   = "${var.project_name}-${var.environment}"
+  family                   = "${var.project}-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.task_cpu
@@ -262,7 +262,7 @@ resource "aws_ecs_task_definition" "main" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_name}-task-${var.environment}"
+      Name = "${var.project}-task-${var.environment}"
     }
   )
 }
@@ -272,7 +272,7 @@ resource "aws_ecs_task_definition" "main" {
 # ============================================
 
 resource "aws_ecs_service" "main" {
-  name            = "${var.project_name}-service-${var.environment}"
+  name            = "${var.project}-service-${var.environment}"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.arn
   desired_count   = var.desired_count
@@ -307,7 +307,7 @@ resource "aws_ecs_service" "main" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_name}-service-${var.environment}"
+      Name = "${var.project}-service-${var.environment}"
     }
   )
 
@@ -330,7 +330,7 @@ resource "aws_appautoscaling_target" "ecs" {
 
 # Scale up based on CPU
 resource "aws_appautoscaling_policy" "ecs_cpu" {
-  name               = "${var.project_name}-cpu-scaling-${var.environment}"
+  name               = "${var.project}-cpu-scaling-${var.environment}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension
@@ -348,7 +348,7 @@ resource "aws_appautoscaling_policy" "ecs_cpu" {
 
 # Scale up based on Memory
 resource "aws_appautoscaling_policy" "ecs_memory" {
-  name               = "${var.project_name}-memory-scaling-${var.environment}"
+  name               = "${var.project}-memory-scaling-${var.environment}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension

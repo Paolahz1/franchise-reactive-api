@@ -2,7 +2,7 @@
 # GENERAL VARIABLES
 # ============================================
 
-variable "project_name" {
+variable "project" {
   description = "Name of the project"
   type        = string
 }

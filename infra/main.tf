@@ -89,7 +89,7 @@ module "alb" {
 module "ecs" {
   source = "./ecs"
 
-  project_name       = var.project
+  project            = var.project
   environment        = var.env
   aws_region         = var.aws_region
   

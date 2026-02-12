@@ -2,15 +2,9 @@
 # Variables de entrada del módulo ALB
 # ============================================
 
-variable "project" {
-  description = "Nombre del proyecto"
-  type        = string
-}
+variable "project"{}
 
-variable "env" {
-  description = "Ambiente (dev, staging, prod)"
-  type        = string
-}
+variable "env" {}
 
 variable "vpc_id" {
   description = "ID de la VPC donde se creará el ALB"
