@@ -17,11 +17,16 @@ public class AddBranchToFranchiseUseCase {
     public Mono<Branch> execute(Long franchiseId, Branch branch) {
         return franchiseRepository.findById(franchiseId)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
-                .flatMap(
-                        franchise -> branchRepository.findByNameAndFranchiseId(branch.getName(), franchiseId)
-                        .flatMap(existing ->
-                                Mono.error(new BusinessException(TechnicalMessage.BRANCH_NAME_ALREADY_EXISTS))
-                        )
+                .flatMap(franchise -> {
+                            return branchRepository.findByNameAndFranchiseId(branch.getName(), franchiseId)
+                                    .flatMap(existing ->
+                                            Mono.<Branch>error(new BusinessException(TechnicalMessage.BRANCH_NAME_ALREADY_EXISTS))
+                                    )
+                                    .switchIfEmpty(Mono.defer(() -> {
+                                        branch.setFranchiseId(franchiseId);
+                                        return branchRepository.save(branch);
+                                    }));
+                        }
                 );
     }
 }

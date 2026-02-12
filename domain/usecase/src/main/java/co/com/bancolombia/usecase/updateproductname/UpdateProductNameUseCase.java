@@ -17,16 +17,18 @@ public class UpdateProductNameUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NOT_FOUND))))
                 .flatMap(product ->
                     productRepository.findByNameAndBranchId(newName.trim(), product.getBranchId())
-                        .flatMap(existing ->
-                            existing.getId().equals(productId)
-                                ? productRepository.updateName(productId, newName.trim())
-                                    .then(productRepository.findById(productId))
-                                : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE)))
-                        )
-                        .switchIfEmpty(
+                        .flatMap(existing -> {
+                            if (existing.getId().equals(productId)) {
+                                return productRepository.updateName(productId, newName.trim())
+                                        .then(Mono.just(product));
+                            } else {
+                                return Mono.error(new BusinessException(TechnicalMessage.PRODUCT_NAME_DUPLICATE));
+                            }
+                        })
+                        .switchIfEmpty(Mono.defer(() ->
                             productRepository.updateName(productId, newName.trim())
-                                .then(productRepository.findById(productId))
-                        )
+                                .then(Mono.just(product))
+                        ))
                 );
     }
 }

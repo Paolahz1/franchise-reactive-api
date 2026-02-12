@@ -17,16 +17,18 @@ public class UpdateFranchiseNameUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NOT_FOUND))))
                 .flatMap(franchise ->
                     franchiseRepository.findByName(newName.trim())
-                        .flatMap(existing ->
-                            existing.getId().equals(franchiseId)
-                                ? franchiseRepository.updateName(franchiseId, newName.trim())
-                                    .then(franchiseRepository.findById(franchiseId))
-                                : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NAME_DUPLICATE)))
-                        )
-                        .switchIfEmpty(
+                        .flatMap(existing -> {
+                            if (existing.getId().equals(franchiseId)) {
+                                return franchiseRepository.updateName(franchiseId, newName.trim())
+                                        .then(Mono.just(franchise));
+                            } else {
+                                return Mono.error(new BusinessException(TechnicalMessage.FRANCHISE_NAME_DUPLICATE));
+                            }
+                        })
+                        .switchIfEmpty(Mono.defer(() ->
                             franchiseRepository.updateName(franchiseId, newName.trim())
-                                .then(franchiseRepository.findById(franchiseId))
-                        )
+                                .then(Mono.just(franchise))
+                        ))
                 );
     }
 }

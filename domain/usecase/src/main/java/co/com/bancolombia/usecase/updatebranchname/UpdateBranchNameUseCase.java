@@ -17,16 +17,18 @@ public class UpdateBranchNameUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NOT_FOUND))))
                 .flatMap(branch ->
                     branchRepository.findByNameAndFranchiseId(newName.trim(), branch.getFranchiseId())
-                        .flatMap(existing ->
-                            existing.getId().equals(branchId)
-                                ? branchRepository.updateName(branchId, newName.trim())
-                                    .then(branchRepository.findById(branchId))
-                                : Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.BRANCH_NAME_DUPLICATE)))
-                        )
-                        .switchIfEmpty(
+                        .flatMap(existing -> {
+                            if (existing.getId().equals(branchId)) {
+                                return branchRepository.updateName(branchId, newName.trim())
+                                        .then(Mono.just(branch));
+                            } else {
+                                return Mono.error(new BusinessException(TechnicalMessage.BRANCH_NAME_DUPLICATE));
+                            }
+                        })
+                        .switchIfEmpty(Mono.defer(() ->
                             branchRepository.updateName(branchId, newName.trim())
-                                .then(branchRepository.findById(branchId))
-                        )
+                                .then(Mono.just(branch))
+                        ))
                 );
     }
 }
