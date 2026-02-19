@@ -41,7 +41,7 @@ public class ProductHandler {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
                 .flatMap(branchId ->
                         request.bodyToMono(ProductRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                                 .map(productRequestMapper::toDomain)
                                 .flatMap(product -> addProductToBranchUseCase.execute(branchId, product))
                 )
@@ -86,7 +86,7 @@ public class ProductHandler {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("productId")))
                 .flatMap(productId ->
                         request.bodyToMono(UpdateStockRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                                 .flatMap(stockRequest ->
                                         updateProductStockUseCase.execute(productId, stockRequest.getStock())
                                 )
@@ -113,7 +113,7 @@ public class ProductHandler {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("productId")))
                 .flatMap(productId ->
                         request.bodyToMono(UpdateNameRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                                 .flatMap(updateRequest ->
                                         updateProductNameUseCase.execute(productId, updateRequest.getName())
                                 )

@@ -37,7 +37,9 @@ public class BranchHandler {
            return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
                         request.bodyToMono(BranchRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() ->
+                                        Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))
+                                ))
                                 .flatMap(validationUtils::validate)
                                 .map(branchRequestMapper::toDomain)
                                 .flatMap(branch -> addBranchToFranchiseUseCase.execute(franchiseId, branch))
@@ -65,11 +67,10 @@ public class BranchHandler {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("branchId")))
                 .flatMap(branchId ->
                         request.bodyToMono(UpdateNameRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() ->
+                                        Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                                 .flatMap(validationUtils::validate)
-                                .flatMap(updateRequest ->
-                                        updateBranchNameUseCase.execute(branchId, updateRequest.getName())
-                                )
+                                .flatMap(updateRequest -> updateBranchNameUseCase.execute(branchId, updateRequest.getName()))
                 )
                 .map(branchResponseMapper::toResponse)
                 .flatMap(response ->
