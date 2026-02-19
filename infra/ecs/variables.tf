@@ -100,13 +100,13 @@ variable "alb_dns_url" {
 variable "task_cpu" {
   description = "CPU units for the task (256, 512, 1024, 2048, 4096)"
   type        = string
-  default     = "512"
+  default     = "1024"
 }
 
 variable "task_memory" {
   description = "Memory for the task in MB"
   type        = string
-  default     = "1024"
+  default     = "2048"
 }
 
 variable "container_name" {

@@ -26,10 +26,10 @@ class FranchiseRouterTest {
 
     @Test
     void shouldCreateFranchiseRoutes() {
-        // When
+      
         RouterFunction<ServerResponse> routes = router.franchiseRoutes(handler);
 
-        // Then
+     
         assertThat(routes).isNotNull();
     }
 }

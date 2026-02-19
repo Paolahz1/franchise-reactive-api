@@ -26,10 +26,10 @@ class ProductRouterTest {
 
     @Test
     void shouldCreateProductRoutes() {
-        // When
+    
         RouterFunction<ServerResponse> routes = router.productRoutes(handler);
 
-        // Then
+
         assertThat(routes).isNotNull();
     }
 }
