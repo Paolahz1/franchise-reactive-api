@@ -58,6 +58,9 @@ class FranchiseHandlerTest {
     private LoggingUtils loggingUtils;
 
     @Mock
+    private co.com.bancolombia.api.utils.ValidationUtils validationUtils;
+
+    @Mock
     private ServerRequest serverRequest;
 
     @InjectMocks
@@ -84,6 +87,7 @@ class FranchiseHandlerTest {
         response.setName("Test Franchise");
 
         when(serverRequest.bodyToMono(FranchiseRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(franchiseRequestMapper.toDomain(request)).thenReturn(franchise);
         when(createFranchiseUseCase.execute(franchise)).thenReturn(Mono.just(savedFranchise));
         when(franchiseResponseMapper.toResponse(savedFranchise)).thenReturn(response);
@@ -163,6 +167,7 @@ class FranchiseHandlerTest {
 
         when(serverRequest.pathVariable("franchiseId")).thenReturn(String.valueOf(franchiseId));
         when(serverRequest.bodyToMono(UpdateNameRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(updateFranchiseNameUseCase.execute(franchiseId, "Updated Franchise")).thenReturn(Mono.just(updatedFranchise));
         when(franchiseResponseMapper.toResponse(updatedFranchise)).thenReturn(response);
 

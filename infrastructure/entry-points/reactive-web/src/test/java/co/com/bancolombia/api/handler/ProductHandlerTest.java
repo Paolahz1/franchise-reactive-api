@@ -51,6 +51,9 @@ class ProductHandlerTest {
     private LoggingUtils loggingUtils;
 
     @Mock
+    private co.com.bancolombia.api.utils.ValidationUtils validationUtils;
+
+    @Mock
     private ServerRequest serverRequest;
 
     @InjectMocks
@@ -84,6 +87,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable("branchId")).thenReturn(String.valueOf(branchId));
         when(serverRequest.bodyToMono(ProductRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(productRequestMapper.toDomain(request)).thenReturn(product);
         when(addProductToBranchUseCase.execute(branchId, product)).thenReturn(Mono.just(savedProduct));
         when(productResponseMapper.toResponse(savedProduct)).thenReturn(response);
@@ -143,6 +147,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable("productId")).thenReturn(String.valueOf(productId));
         when(serverRequest.bodyToMono(UpdateStockRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(updateProductStockUseCase.execute(productId, 200)).thenReturn(Mono.just(updatedProduct));
         when(productResponseMapper.toResponse(updatedProduct)).thenReturn(response);
 
@@ -179,6 +184,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable("productId")).thenReturn(String.valueOf(productId));
         when(serverRequest.bodyToMono(UpdateNameRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(updateProductNameUseCase.execute(productId, "Updated Product")).thenReturn(Mono.just(updatedProduct));
         when(productResponseMapper.toResponse(updatedProduct)).thenReturn(response);
 
@@ -257,6 +263,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable("productId")).thenReturn(String.valueOf(productId));
         when(serverRequest.bodyToMono(UpdateStockRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(updateProductStockUseCase.execute(productId, 200)).thenReturn(Mono.error(error));
 
         // Act & Assert
@@ -295,6 +302,7 @@ class ProductHandlerTest {
 
         when(serverRequest.pathVariable("productId")).thenReturn(String.valueOf(productId));
         when(serverRequest.bodyToMono(UpdateNameRequest.class)).thenReturn(Mono.just(request));
+        when(validationUtils.validate(request)).thenReturn(Mono.just(request));
         when(updateProductNameUseCase.execute(productId, "Updated Product")).thenReturn(Mono.error(error));
 
         // Act & Assert
