@@ -73,7 +73,7 @@ public class FranchiseRouter {
                     ),
                     @ApiResponse(
                         responseCode = "500",
-                        description = "Error interno del servidor"
+                        description = "Internal server error"
                     )
                 }
             )
@@ -91,7 +91,7 @@ public class FranchiseRouter {
                 parameters = {
                     @Parameter(
                         name = "franchiseId",
-                        description = "ID de la franquicia",
+                        description = "Franchise ID",
                         required = true,
                         in = ParameterIn.PATH,
                         schema = @Schema(type = "integer", format = "int64", example = "1")
@@ -130,7 +130,7 @@ public class FranchiseRouter {
                 parameters = {
                     @Parameter(
                         name = "franchiseId",
-                        description = "ID de la franquicia",
+                        description = "Franchise ID",
                         required = true,
                         in = ParameterIn.PATH,
                         schema = @Schema(type = "integer", format = "int64", example = "1")

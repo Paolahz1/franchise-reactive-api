@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request para actualizar el stock de un producto")
+@Schema(description = "Request to update product stock")
 public class UpdateStockRequest {
 
     @NotNull(message = "Stock is mandatory")

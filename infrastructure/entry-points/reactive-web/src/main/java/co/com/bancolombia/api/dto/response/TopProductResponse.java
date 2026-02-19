@@ -12,15 +12,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Producto con mayor stock en una sucursal")
+@Schema(description = "Product with highest stock in a branch")
 public class TopProductResponse {
 
-    @Schema(description = "ID único del producto", example = "1")
+    @Schema(description = "Unique product ID", example = "1")
     private Long productId;
 
-    @Schema(description = "Nombre del producto", example = "Café Latte")
+    @Schema(description = "Product name", example = "Café Latte")
     private String productName;
 
-    @Schema(description = "Stock disponible", example = "150")
+    @Schema(description = "Available stock", example = "150")
     private Integer stock;
 }
