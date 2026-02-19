@@ -30,7 +30,7 @@ variable "allowed_cidr_blocks" {
 variable "mysql_version" {
   description = "MySQL engine version"
   type        = string
-  default     = "8.0.35"
+  default     = "8.0.45"
 }
 
 variable "instance_class" {
