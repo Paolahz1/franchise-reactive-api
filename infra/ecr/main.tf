@@ -1,14 +1,13 @@
 # ============================================
 # ECR - Elastic Container Registry
 # ============================================
-# Repositorio para almacenar imágenes de la aplicación
 
 resource "aws_ecr_repository" "main" {
   name                 = "${var.project}-${var.env}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = true # AWS revisa la imagen en busca de vulnerabilidades
   }
 
   encryption_configuration {

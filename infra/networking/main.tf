@@ -15,8 +15,8 @@ module "vpc" {
   private_subnets = [for k, v in var.availability_zones : cidrsubnet(var.vpc_cidr, 8, k + 10)]
 
   enable_nat_gateway   = true
-  single_nat_gateway   = true  # Para dev - en prod usar false
-  enable_dns_hostnames = true
+  single_nat_gateway   = true # Para dev - en prod usar false
+  enable_dns_hostnames = true # Permite asignar hostnames a recursos
   enable_dns_support   = true
 
   tags = {

@@ -4,19 +4,19 @@
 
 # Subnet Group para RDS
 resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-${var.environment}-db-subnet-group"
+  name       = "${var.project}-${var.env}-db-subnet-group"
   subnet_ids = var.subnet_ids
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-db-subnet-group"
-    Environment = var.environment
-    Project     = var.project_name
+    Name    = "${var.project}-${var.env}-db-subnet-group"
+    env     = var.env
+    Project = var.project
   }
 }
 
 # Security Group para RDS
 resource "aws_security_group" "main" {
-  name        = "${var.project_name}-${var.environment}-rds-sg"
+  name        = "${var.project}-${var.env}-rds-sg"
   description = "Security group for RDS MySQL instance"
   vpc_id      = var.vpc_id
 
@@ -37,15 +37,15 @@ resource "aws_security_group" "main" {
   }
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-rds-sg"
-    Environment = var.environment
-    Project     = var.project_name
+    Name    = "${var.project}-${var.env}-rds-sg"
+    env     = var.env
+    Project = var.project
   }
 }
 
 # Parameter Group para MySQL
 resource "aws_db_parameter_group" "main" {
-  name   = "${var.project_name}-${var.environment}-mysql-params"
+  name   = "${var.project}-${var.env}-mysql-params"
   family = "mysql8.0"
 
   parameter {
@@ -64,15 +64,15 @@ resource "aws_db_parameter_group" "main" {
   }
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-mysql-params"
-    Environment = var.environment
-    Project     = var.project_name
+    Name    = "${var.project}-${var.env}-mysql-params"
+    env     = var.env
+    Project = var.project
   }
 }
 
 # RDS Instance
 resource "aws_db_instance" "main" {
-  identifier     = "${var.project_name}-${var.environment}-mysql"
+  identifier     = "${var.project}-${var.env}-mysql"
   engine         = "mysql"
   engine_version = var.mysql_version
 
@@ -95,7 +95,7 @@ resource "aws_db_instance" "main" {
   maintenance_window      = var.maintenance_window
 
   skip_final_snapshot       = var.skip_final_snapshot
-  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.project_name}-${var.environment}-mysql-final-snapshot"
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${var.project}-${var.env}-mysql-final-snapshot"
 
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
 
@@ -106,8 +106,8 @@ resource "aws_db_instance" "main" {
   auto_minor_version_upgrade = true
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-mysql"
-    Environment = var.environment
-    Project     = var.project_name
+    Name    = "${var.project}-${var.env}-mysql"
+    env     = var.env
+    Project = var.project
   }
 }

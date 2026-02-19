@@ -1,8 +1,7 @@
 # ============================================
 # Application Load Balancer
 # ============================================
-# ALB público que recibe tráfico HTTP/HTTPS
-# y lo distribuye a los contenedores ECS
+
 
 # Security Group para el ALB
 resource "aws_security_group" "main" {
@@ -19,7 +18,7 @@ resource "aws_security_group" "main" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Permite tráfico HTTPS desde Internet (opcional, para futuro)
+  # Permite tráfico HTTPS desde Internet
   ingress {
     description = "HTTPS from Internet"
     from_port   = 443
@@ -28,7 +27,7 @@ resource "aws_security_group" "main" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Permite todo el tráfico de salida (para healthchecks y conexión a ECS)
+  # Permite t_odo el tráfico de salida (para healthchecks y conexión a ECS)
   egress {
     description = "All outbound traffic"
     from_port   = 0
@@ -47,10 +46,10 @@ resource "aws_security_group" "main" {
 # Application Load Balancer
 resource "aws_lb" "main" {
   name               = "${var.project}-${var.env}-alb"
-  internal           = false  # ALB público (accesible desde Internet)
+  internal           = false # ALB público (accesible desde Internet)
   load_balancer_type = "application"
   security_groups    = [aws_security_group.main.id]
-  subnets            = var.public_subnet_ids  # Debe estar en subnets públicas
+  subnets            = var.public_subnet_ids
 
   # Protección contra eliminación accidental
   enable_deletion_protection = var.enable_deletion_protection
@@ -63,25 +62,24 @@ resource "aws_lb" "main" {
 }
 
 # Target Group para ECS
-# Grupo de destinos donde el ALB enviará el tráfico
 resource "aws_lb_target_group" "main" {
   name        = "${var.project}-${var.env}-ecs-tg"
-  port        = var.container_port  # Puerto donde corre Spring Boot (8080)
+  port        = var.container_port # Puerto donde corre Spring Boot (8080)
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
-  target_type = "ip"  # ECS Fargate usa IP targets
+  target_type = "ip" # ECS Fargate usa IP targets
 
   # Health Check - Verifica que los contenedores estén saludables
   health_check {
     enabled             = true
-    path                = var.health_check_path  # /actuator/health
+    path                = var.health_check_path
     protocol            = "HTTP"
     port                = "traffic-port"
-    healthy_threshold   = 2   # 2 chequeos exitosos = saludable
-    unhealthy_threshold = 3   # 3 chequeos fallidos = no saludable
-    timeout             = 5   # Timeout de 5 segundos
-    interval            = 30  # Chequeo cada 30 segundos
-    matcher             = "200"  # Código HTTP esperado
+    healthy_threshold   = 2 # 2 chequeos exitosos = saludable
+    unhealthy_threshold = 3 # 3 chequeos fallidos = no saludable
+    timeout             = 5
+    interval            = 30    # Chequeo cada 30 segundos
+    matcher             = "200" # Código HTTP esperado
   }
 
   # Deregistration delay - Tiempo de espera antes de quitar un contenedor
