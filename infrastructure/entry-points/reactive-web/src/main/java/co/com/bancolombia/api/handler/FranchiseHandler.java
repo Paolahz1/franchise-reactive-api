@@ -1,5 +1,6 @@
 package co.com.bancolombia.api.handler;
 
+import co.com.bancolombia.api.utils.ValidationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,7 @@ public class FranchiseHandler {
     private final FranchiseResponseMapper franchiseResponseMapper;
     private final FranchiseWithMaxStockProductsResponseMapper franchiseWithMaxStockProductsResponseMapper;
     private final LoggingUtils loggingUtils;
+    private final ValidationUtils validationUtils;
 
 public Mono<ServerResponse> createFranchise(ServerRequest request) {
 
@@ -39,6 +41,7 @@ public Mono<ServerResponse> createFranchise(ServerRequest request) {
 
         return request.bodyToMono(FranchiseRequest.class)
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                .flatMap(validationUtils::validate)
                 .map(franchiseRequestMapper::toDomain)
                 .flatMap(createFranchiseUseCase::execute)
                 .map(franchiseResponseMapper::toResponse)
@@ -85,6 +88,7 @@ public Mono<ServerResponse> createFranchise(ServerRequest request) {
                 .flatMap(franchiseId ->
                         request.bodyToMono(UpdateNameRequest.class)
                                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                                .flatMap(validationUtils::validate)
                                 .flatMap(updateRequest ->
                                         updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
                                 )

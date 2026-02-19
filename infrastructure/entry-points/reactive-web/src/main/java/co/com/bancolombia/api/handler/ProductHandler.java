@@ -12,6 +12,7 @@ import co.com.bancolombia.api.dto.request.UpdateStockRequest;
 import co.com.bancolombia.api.mapper.ProductRequestMapper;
 import co.com.bancolombia.api.mapper.ProductResponseMapper;
 import co.com.bancolombia.api.utils.LoggingUtils;
+import co.com.bancolombia.api.utils.ValidationUtils;
 import co.com.bancolombia.model.common.enums.TechnicalMessage;
 import co.com.bancolombia.model.common.exceptions.BusinessException;
 import co.com.bancolombia.usecase.addproducttobranch.AddProductToBranchUseCase;
@@ -32,6 +33,7 @@ public class ProductHandler {
     private final ProductRequestMapper productRequestMapper;
     private final ProductResponseMapper productResponseMapper;
     private final LoggingUtils loggingUtils;
+    private final ValidationUtils validationUtils;
 
     public Mono<ServerResponse> addProductToBranch(ServerRequest request) {
 
@@ -42,6 +44,7 @@ public class ProductHandler {
                 .flatMap(branchId ->
                         request.bodyToMono(ProductRequest.class)
                                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                                .flatMap(validationUtils::validate)
                                 .map(productRequestMapper::toDomain)
                                 .flatMap(product -> addProductToBranchUseCase.execute(branchId, product))
                 )
@@ -87,6 +90,7 @@ public class ProductHandler {
                 .flatMap(productId ->
                         request.bodyToMono(UpdateStockRequest.class)
                                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                                .flatMap(validationUtils::validate)
                                 .flatMap(stockRequest ->
                                         updateProductStockUseCase.execute(productId, stockRequest.getStock())
                                 )
@@ -114,6 +118,7 @@ public class ProductHandler {
                 .flatMap(productId ->
                         request.bodyToMono(UpdateNameRequest.class)
                                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
+                                .flatMap(validationUtils::validate)
                                 .flatMap(updateRequest ->
                                         updateProductNameUseCase.execute(productId, updateRequest.getName())
                                 )
