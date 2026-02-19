@@ -26,10 +26,9 @@ class BranchRouterTest {
 
     @Test
     void shouldCreateBranchRoutes() {
-        // When
+    
         RouterFunction<ServerResponse> routes = router.branchRoutes(handler);
 
-        // Then
         assertThat(routes).isNotNull();
     }
 }
