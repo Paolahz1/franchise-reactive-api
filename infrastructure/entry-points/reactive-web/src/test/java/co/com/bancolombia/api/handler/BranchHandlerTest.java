@@ -1,5 +1,16 @@
 package co.com.bancolombia.api.handler;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.server.ServerRequest;
+
 import co.com.bancolombia.api.dto.request.BranchRequest;
 import co.com.bancolombia.api.dto.request.UpdateNameRequest;
 import co.com.bancolombia.api.dto.response.BranchResponse;
@@ -10,19 +21,8 @@ import co.com.bancolombia.api.utils.ValidationUtils;
 import co.com.bancolombia.model.branch.Branch;
 import co.com.bancolombia.usecase.addbranchtofranchise.AddBranchToFranchiseUseCase;
 import co.com.bancolombia.usecase.updatebranchname.UpdateBranchNameUseCase;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BranchHandler - Unit Tests")

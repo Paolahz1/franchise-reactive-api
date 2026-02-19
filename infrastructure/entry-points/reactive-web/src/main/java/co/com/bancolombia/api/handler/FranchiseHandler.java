@@ -38,7 +38,7 @@ public Mono<ServerResponse> createFranchise(ServerRequest request) {
         loggingUtils.logRequest(operation, request);
 
         return request.bodyToMono(FranchiseRequest.class)
-                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                 .map(franchiseRequestMapper::toDomain)
                 .flatMap(createFranchiseUseCase::execute)
                 .map(franchiseResponseMapper::toResponse)
@@ -84,7 +84,7 @@ public Mono<ServerResponse> createFranchise(ServerRequest request) {
         return Mono.fromSupplier(() -> Long.valueOf(request.pathVariable("franchiseId")))
                 .flatMap(franchiseId ->
                         request.bodyToMono(UpdateNameRequest.class)
-                                .switchIfEmpty(Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING)))
+                                .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessage.REQUIRED_FIELD_MISSING))))
                                 .flatMap(updateRequest ->
                                         updateFranchiseNameUseCase.execute(franchiseId, updateRequest.getName())
                                 )
