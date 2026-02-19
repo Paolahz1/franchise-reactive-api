@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request para actualizar el nombre")
+@Schema(description = "Request to update name")
 public class UpdateNameRequest {
 
     @NotBlank(message = "Name must not be empty")

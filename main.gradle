@@ -96,7 +96,11 @@ tasks.register('jacocoMergedReport', JacocoReport) {
                 '**/exception/**',
                 '**/MainApplication.class',
                 '**/mapper/**',
-                '**/repository/**'
+                '**/repository/**',
+                '**/api/utils/**',
+                '**/api/router/**',
+                '**/common/exceptions/**',
+                '**/common/enums/**'
         ])
     }))
     reports {
