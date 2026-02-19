@@ -2,13 +2,13 @@
 # Variables de entrada del módulo RDS
 # ============================================
 
-variable "project_name" {
-  description = "Name of the project"
+variable "project" {
+  description = "Project name"
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
+variable "env" {
+  description = "Enviroment (dev, prod)"
   type        = string
 }
 

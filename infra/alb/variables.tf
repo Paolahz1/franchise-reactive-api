@@ -2,9 +2,16 @@
 # Variables de entrada del módulo ALB
 # ============================================
 
-variable "project" {}
+variable "project" {
+  description = "Project name"
+  type        = string
+}
 
-variable "env" {}
+variable "env" {
+  description = "Enviroment (dev, prod)"
+  type        = string
+}
+
 
 variable "vpc_id" {
   description = "ID of the VPC where the ALB will be created"
@@ -31,5 +38,4 @@ variable "health_check_path" {
 variable "enable_deletion_protection" {
   description = "Protection against accidental ALB deletion"
   type        = bool
-  default     = false
 }

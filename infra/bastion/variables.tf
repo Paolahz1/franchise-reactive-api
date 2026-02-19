@@ -2,9 +2,16 @@
 # Variables de entrada del módulo Bastion
 # ============================================
 
-variable "project" {}
+variable "project" {
+  description = "Project name"
+  type        = string
+}
 
-variable "env" {}
+variable "env" {
+  description = "Enviroment (dev, prod)"
+  type        = string
+}
+
 
 variable "vpc_id" {
   description = "VPC ID"
