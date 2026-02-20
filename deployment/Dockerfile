@@ -1,4 +1,6 @@
-# Multi-stage build para optimizar tamaño de imagen
+# ============================================
+# Stage 1: Builder (Compilación con Gradle)
+# ============================================
 FROM gradle:8.14-jdk21-alpine AS builder
 
 WORKDIR /build
@@ -17,7 +19,7 @@ COPY applications ./applications
 RUN gradle :app-service:build -x test -x validateStructure --no-daemon
 
 # ============================================
-# Imagen final - solo runtime (OpenJ9 para soportar scaffold Bancolombia)
+# Stage 2: Runtime (Imagen final optimizada)
 # ============================================
 FROM ibm-semeru-runtimes:open-21-jre
 
@@ -27,17 +29,17 @@ LABEL version="1.0.0"
 
 VOLUME /tmp
 
-# Instalar curl para health checks y crear usuario no-root
-RUN apt-get update && apt-get install -y --no-install-recommends curl wget && \
+# Instalar dependencias mínimas y crear usuario no-root
+RUN apt-get update && apt-get install -y --no-install-recommends wget && \
     rm -rf /var/lib/apt/lists/* && \
     groupadd -r appgroup && useradd -r -g appgroup appuser
 
 WORKDIR /app
 
-# Copiar JAR desde el builder
+# Copiar JAR desde el builder (Stage 1)
 COPY --from=builder --chown=appuser:appgroup /build/applications/app-service/build/libs/*.jar app.jar
 
-# Configuración de JVM optimizada para contenedores (basado en scaffold Bancolombia con OpenJ9)
+# Configuración de JVM optimizada para contenedores
 ENV JAVA_OPTS="-Xshareclasses:name=cacheapp,cacheDir=/cache,nonfatal \
     -XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=70 \
@@ -46,14 +48,8 @@ ENV JAVA_OPTS="-Xshareclasses:name=cacheapp,cacheDir=/cache,nonfatal \
 # Exponer puerto
 EXPOSE 8080
 
-# Cambiar a usuario no-root
+# Cambiar a usuario no-root por seguridad
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Entrypoint similar al scaffold de Bancolombia
+# Entrypoint
 ENTRYPOINT ["/bin/sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
-
-

@@ -30,7 +30,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_wrapper: false  # Para poder capturar outputs
+          terraform_wrapper: false # Para poder capturar outputs
 
       - name: Terraform Init
         working-directory: infra
@@ -53,7 +53,7 @@ jobs:
           echo "vpc_id=$(terraform output -raw vpc_id)" >> $GITHUB_OUTPUT
           echo "alb_dns=$(terraform output -raw alb_dns_name)" >> $GITHUB_OUTPUT
 
-  # Job 2: Build y Push de imagen Docker
+  # Job 2: Build y Push de imagen Docker (Delegado 100% a Docker Multi-stage)
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
@@ -70,19 +70,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew :app-service:build -x test -x validateStructure --no-daemon
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -92,8 +79,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ needs.infrastructure.outputs.ecr_repo_name }}
           IMAGE_TAG: ${{ github.sha }}
+        # Aquí Docker se encarga de descargar Java, Gradle, compilar el JAR y crear la imagen final
         run: docker build -f deployment/Dockerfile -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" .
-
 
       - name: Push Docker image to ECR
         env:
@@ -111,11 +98,8 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "### 🐳 Docker Image Pushed Successfully" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
           echo "**Latest:** \`$ECR_REGISTRY/$ECR_REPOSITORY:latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Commit SHA: \`$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
 
   # Job 3: Deploy to ECS
   deploy:
@@ -147,7 +131,6 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "### 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Cluster:** ${{ needs.infrastructure.outputs.ecs_cluster_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Service:** ${{ needs.infrastructure.outputs.ecs_service_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** ✅ Deployed and Stable" >> $GITHUB_STEP_SUMMARY
