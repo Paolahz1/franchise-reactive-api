@@ -149,12 +149,6 @@ variable "cpu_target_value" {
   default     = 70
 }
 
-variable "memory_target_value" {
-  description = "Target memory utilization percentage for auto-scaling"
-  type        = number
-  default     = 80
-}
-
 # ============================================
 # LOGGING VARIABLES
 # ============================================

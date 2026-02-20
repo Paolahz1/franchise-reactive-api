@@ -25,6 +25,7 @@ variable "subnet_ids" {
 variable "allowed_cidr_blocks" {
   description = "List of CIDR blocks allowed to access the RDS instance"
   type        = list(string)
+  default     = []
 }
 
 variable "mysql_version" {
@@ -115,3 +116,5 @@ variable "max_connections" {
   type        = string
   default     = "100"
 }
+
+

@@ -20,12 +20,15 @@ resource "aws_security_group" "main" {
   description = "Security group for RDS MySQL instance"
   vpc_id      = var.vpc_id
 
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = var.publicly_accessible ? ["0.0.0.0/0"] : var.allowed_cidr_blocks
-    description = var.publicly_accessible ? "MySQL access from anywhere (DEV ONLY)" : "MySQL access from allowed CIDR blocks"
+  dynamic "ingress" {
+    for_each = var.env == "prod" ? [] : [1]
+    content {
+      from_port   = 3306
+      to_port     = 3306
+      protocol    = "tcp"
+      cidr_blocks = var.publicly_accessible ? ["0.0.0.0/0"] : var.allowed_cidr_blocks
+      description = var.publicly_accessible ? "MySQL access from anywhere (DEV ONLY)" : "MySQL access from allowed CIDR blocks"
+    }
   }
 
   egress {

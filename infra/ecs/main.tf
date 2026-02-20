@@ -18,18 +18,6 @@ resource "aws_ecs_cluster" "main" {
   )
 }
 
-resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name = aws_ecs_cluster.main.name
-
-  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
-
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = "FARGATE"
-  }
-}
-
 # ============================================
 # CLOUDWATCH LOG GROUP
 # ============================================
@@ -73,56 +61,6 @@ resource "aws_iam_role" "ecs_task_execution" {
 resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   role       = aws_iam_role.ecs_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-# Additional policy for ECR access
-resource "aws_iam_role_policy" "ecs_task_execution_ecr" {
-  name = "ecr-access"
-  role = aws_iam_role.ecs_task_execution.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "${aws_cloudwatch_log_group.ecs.arn}:*"
-      }
-    ]
-  })
-}
-
-# ECS Task Role (permissions for the running application)
-resource "aws_iam_role" "ecs_task" {
-  name = "${var.project}-ecs-task-${var.env}"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = var.tags
 }
 
 # ============================================
@@ -169,7 +107,6 @@ resource "aws_ecs_task_definition" "main" {
   cpu                      = var.task_cpu
   memory                   = var.task_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([
     {
@@ -228,14 +165,6 @@ resource "aws_ecs_task_definition" "main" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/actuator/health || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 120
-      }
     }
   ])
 
@@ -278,6 +207,7 @@ resource "aws_ecs_service" "main" {
     rollback = true
   }
 
+#periodo de gracia de 120 segundos antes de realizar pruebas de salud (Java tarda en arrancar)
   health_check_grace_period_seconds = 120
 
   depends_on = [
@@ -321,25 +251,9 @@ resource "aws_appautoscaling_policy" "ecs_cpu" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
     target_value       = var.cpu_target_value
-    scale_in_cooldown  = 300
-    scale_out_cooldown = 60
+    scale_in_cooldown  = 300 #Segundos para achicarse
+    scale_out_cooldown = 60 # Segundos para crecer
   }
 }
 
-# Scale up based on Memory
-resource "aws_appautoscaling_policy" "ecs_memory" {
-  name               = "${var.project}-memory-scaling-${var.env}"
-  policy_type        = "TargetTrackingScaling"
-  resource_id        = aws_appautoscaling_target.ecs.resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
-    }
-    target_value       = var.memory_target_value
-    scale_in_cooldown  = 300
-    scale_out_cooldown = 60
-  }
-}

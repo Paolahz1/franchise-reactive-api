@@ -102,7 +102,7 @@ resource "aws_security_group_rule" "rds_from_ecs" {
   to_port                  = 3306
   protocol                 = "tcp"
   source_security_group_id = module.ecs.ecs_security_group_id
-  security_group_id        = module.rds.db_security_group_id
+  security_group_id        = module.rds.db_security_group_id //Destino
   description              = "Allow MySQL access from ECS tasks"
 }
 
