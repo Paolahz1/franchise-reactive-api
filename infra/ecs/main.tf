@@ -165,6 +165,14 @@ resource "aws_ecs_task_definition" "main" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "wget -qO- http://localhost:${var.container_port}/actuator/health || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 120
+      }
     }
   ])
 
