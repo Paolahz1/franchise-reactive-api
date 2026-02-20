@@ -18,7 +18,7 @@ API reactiva para gestión de franquicias, sucursales y productos. Construida co
 - Java 21, Spring Boot 4.0.1, Spring WebFlux, R2DBC MySQL
 - Gradle 8.x con [Scaffold Clean Architecture Plugin](https://bancolombia.github.io/scaffold-clean-architecture/)
 - Terraform (IaC), Docker, GitHub Actions (CI/CD)
-- AWS: VPC, ECS Fargate, ALB, RDS MySQL, ECR, Bastion Host (SSM)
+- AWS: VPC, ECS Fargate, ALB, RDS MySQL, ECR
 
 ## Ejecución local
 
@@ -117,14 +117,13 @@ La autenticación se hace con credenciales IAM almacenadas como **GitHub Secrets
 
 Los módulos de Terraform están en `infra/`:
 
-| Módulo | Recursos |
-|--------|----------|
+| Módulo       | Recursos                                                      |
+| --------------| ---------------------------------------------------------------|
 | `networking` | VPC, subnets públicas/privadas, NAT Gateway, Internet Gateway |
-| `rds` | RDS MySQL en subnet privada |
-| `ecs` | ECS Fargate cluster, task definition, service, auto-scaling |
-| `alb` | Application Load Balancer, target group, listener |
-| `ecr` | Repositorio de imágenes Docker |
-| `bastion` | EC2 con SSM para acceso seguro a RDS |
+| `rds`        | RDS MySQL en subnet privada                                   |
+| `ecs`        | ECS Fargate cluster, task definition, service, auto-scaling   |
+| `alb`        | Application Load Balancer, target group, listener             |
+| `ecr`        | Repositorio de imágenes Docker                                |
 
 El state de Terraform se almacena en S3 con locking en DynamoDB.
 
@@ -136,17 +135,3 @@ terraform init
 terraform plan
 terraform apply
 ```
-
-### Acceso a RDS via Bastion (SSM)
-
-Para conectarse a la base de datos RDS desde tu máquina local:
-
-```bash
-# Terminal 1: Iniciar túnel SSM
-cd infra && ./connect-mysql.sh
-
-# Terminal 2: Conectarse a RDS
-mysql -h 127.0.0.1 -P 3307 -u admin -p
-```
-
-Requiere AWS CLI y el [Session Manager Plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).

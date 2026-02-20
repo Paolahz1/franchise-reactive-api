@@ -43,20 +43,7 @@ module "rds" {
 }
 
 # ============================================
-# FASE 4: Bastion Host (Systems Manager)
-# ============================================
-
-module "bastion" {
-  source = "./bastion"
-
-  project           = var.project
-  env               = var.env
-  vpc_id            = module.networking.vpc_id
-  private_subnet_id = module.networking.private_subnet_ids[0]
-}
-
-# ============================================
-# FASE 5: Application Load Balancer
+# FASE 4: Application Load Balancer
 # ============================================
 
 module "alb" {
@@ -70,7 +57,7 @@ module "alb" {
 }
 
 # ============================================
-# FASE 6: ECS (Elastic Container Service)
+# FASE 5: ECS (Elastic Container Service)
 # ============================================
 
 module "ecs" {
