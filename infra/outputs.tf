@@ -71,20 +71,6 @@ output "db_security_group_id" {
 }
 
 # ============================================
-# BASTION OUTPUTS
-# ============================================
-
-output "bastion_instance_id" {
-  description = "Bastion instance ID for Session Manager"
-  value       = module.bastion.bastion_instance_id
-}
-
-output "bastion_connection_command" {
-  description = "Command to connect via Session Manager"
-  value       = "aws ssm start-session --target ${module.bastion.bastion_instance_id}"
-}
-
-# ============================================
 # ALB OUTPUTS
 # ============================================
 
